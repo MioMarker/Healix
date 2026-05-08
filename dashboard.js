@@ -2513,7 +2513,20 @@ function renderActivityCards(byType, today) {
     document.getElementById('drv-distance').style.display = 'none';
   }
 
-  section.style.display = anyData ? '' : 'none';
+  // When no activity data is present, replace the grid with actionable
+  // guidance instead of hiding the section silently. Matches mobile 4ef79a5.
+  var grid = document.getElementById('activity-cards-grid');
+  if (!anyData && grid) {
+    section.style.display = '';
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:40px">'
+      + '<div class="empty-state-icon">⌚️</div>'
+      + '<div class="empty-state-text">No activity data yet</div>'
+      + '<div style="font-size:12px;color:var(--cream-dim);margin-top:8px;line-height:1.6;max-width:380px;margin-left:auto;margin-right:auto">Sync your Apple Watch through the Healix mobile app and steps, distance, calories, and exercise minutes show up here automatically.</div>'
+      + '<button class="upload-btn" onclick="openConnectHealthBiteModal()" style="margin:16px auto 0;display:flex">Connect Healix App →</button>'
+      + '</div>';
+  } else {
+    section.style.display = anyData ? '' : 'none';
+  }
 }
 
 function updateMiniChart(id, data, today) {
@@ -2540,7 +2553,12 @@ function renderDashMeals(meals, today) {
   var el = document.getElementById('d-meals');
   var emojis = { breakfast:'🍳', lunch:'🥗', dinner:'🍽', snack:'🍎', cooked:'🍳', drink:'🥤', dessert:'🍰', 'ate out':'🍽', beverage:'🥤', supplement:'💊', medication:'💊', alcohol:'🍷', other:'📦' };
   if (todayMeals.length === 0) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🍽</div><div class="empty-state-text">No intake logged today</div></div>';
+    el.innerHTML = '<div class="empty-state">'
+      + '<div class="empty-state-icon">🍽</div>'
+      + '<div class="empty-state-text">No intake logged today</div>'
+      + '<div style="font-size:12px;color:var(--cream-dim);margin-top:6px">Logging meals powers your protein, fiber, and micronutrient insights.</div>'
+      + '<button class="upload-btn" onclick="showPage(\'meals\', null);setTimeout(function(){setMealDateTimeDefault();openModal(\'meal-modal\')},50)" style="margin:14px auto 0;display:flex">+ Log Intake</button>'
+      + '</div>';
     return;
   }
   el.innerHTML = todayMeals.slice(0, 4).map(function(m) {
@@ -3045,7 +3063,12 @@ async function loadMealsPage() {
     );
     if (!meals || meals.error || !Array.isArray(meals)) {
       console.log('[Healix] meals fetch failed or empty:', meals);
-      document.getElementById('meals-list').innerHTML = '<div class="empty-state" style="padding:40px"><div class="empty-state-icon">🍽</div><div class="empty-state-text">No intake logged yet.</div></div>';
+      document.getElementById('meals-list').innerHTML = '<div class="empty-state" style="padding:40px">'
+        + '<div class="empty-state-icon">🍽</div>'
+        + '<div class="empty-state-text">No intake logged yet.</div>'
+        + '<div style="font-size:12px;color:var(--cream-dim);margin-top:8px;line-height:1.6">Tracking what you consume powers your nutrition insights and helps Healix give personalized advice.</div>'
+        + '<button class="upload-btn" onclick="setMealDateTimeDefault();openModal(\'meal-modal\')" style="margin:16px auto 0;display:flex">+ Log Intake</button>'
+        + '</div>';
       return;
     }
     console.log('[Healix] meals fetched:', meals.length, 'mealsDate=', localDateStr(mealsDate));
