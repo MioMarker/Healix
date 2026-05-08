@@ -2487,49 +2487,10 @@ function renderActivityCards(byType, today) {
     document.getElementById('drv-respiratory').style.display = 'none';
   }
 
-  // Walking/running distance (meters → miles)
-  var distRows = byType['distance_walking_running'] || [];
-  var distTodayM = getDailyTotal(distRows, today);
-  var distTodayMi = distTodayM * 0.000621371;
-  if (distTodayMi > 0.01 || distRows.length > 0) {
-    anyData = true;
-    // Source-deduped per-day distance totals.
-    var distPerDayPerSource = {};
-    distRows.forEach(function(r) {
-      var day = localDateStrOf(r);
-      if (!day) return;
-      var v = parseFloat(r.value || 0);
-      if (!isFinite(v)) return;
-      var src = r.source_id || r.source_name || 'unknown';
-      if (!distPerDayPerSource[day]) distPerDayPerSource[day] = {};
-      if (distPerDayPerSource[day][src] == null || v > distPerDayPerSource[day][src]) {
-        distPerDayPerSource[day][src] = v;
-      }
-    });
-    var distDayTotals = {};
-    Object.keys(distPerDayPerSource).forEach(function(day) {
-      var maxV = 0;
-      var srcs = distPerDayPerSource[day];
-      for (var s in srcs) { if (srcs[s] > maxV) maxV = srcs[s]; }
-      distDayTotals[day] = maxV;
-    });
-    var distSum = 0, distCount = 0, now = new Date();
-    for (var d = 0; d < 7; d++) {
-      var dt = new Date(now); dt.setDate(dt.getDate() - d);
-      var ds = localDateStr(dt);
-      if (distDayTotals[ds] !== undefined) { distSum += distDayTotals[ds]; distCount++; }
-    }
-    var distAvgMi = distCount > 0 ? (distSum / distCount) * 0.000621371 : 0;
-    var showMi = distTodayMi > 0.01 ? distTodayMi : distAvgMi;
-    var distScore = scoreDistance(showMi);
-    document.getElementById('drv-distance-val').textContent = showMi.toFixed(1) + ' mi';
-    document.getElementById('drv-distance-status').textContent = distTodayMi > 0.01 ? '7-day avg: ' + distAvgMi.toFixed(1) + ' mi/day' : 'Weekly avg (no data today)';
-    document.getElementById('drv-distance-status').className = 'driver-status';
-    var db = document.getElementById('drv-distance-bar');
-    if (db) { db.style.width = distScore + '%'; db.className = 'driver-bar-fill ' + (distScore >= 70 ? 'good' : distScore >= 40 ? 'fair' : distScore > 0 ? 'low' : ''); }
-  } else {
-    document.getElementById('drv-distance').style.display = 'none';
-  }
+  // Walking distance is intentionally NOT shown on the dashboard — matches
+  // the mobile app, which only surfaces Sleep/Activity/Nutrition tiles plus
+  // an HR/HRV inline row. Distance is still source-deduped via getDailyTotal
+  // and remains available for chat tools and insight rules.
 
   // When no activity data is present, replace the grid with actionable
   // guidance instead of hiding the section silently. Matches mobile 4ef79a5.
