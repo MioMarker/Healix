@@ -24,13 +24,6 @@
   --gold-hover: rgba(184,151,90,0.4);
   --gold-partial: rgba(184,151,90,0.35);
 
-  /* Teal accent (interactive elements) */
-  --teal: #14b8a6;
-  --teal-light: #2DD4BF;
-  --teal-faint: rgba(20, 184, 166, 0.08);
-  --teal-border: rgba(20, 184, 166, 0.18);
-  --teal-hover: rgba(20, 184, 166, 0.4);
-
   --muted: rgba(245,240,232,0.5);
   --neutral: rgba(245,240,232,0.4);
 

@@ -280,6 +280,7 @@ async function init() {
       // Run deterministic insight engine
       var insightCtx = buildInsightContext();
       var insights = runInsightRules(insightCtx);
+      window._lastInsights = insights;
       renderInsightFeed(insights);
       // Show upgrade modal if redirected from chat.html
       if (window.location.search.indexOf('upgrade=1') !== -1) {
@@ -1595,28 +1596,51 @@ function renderSleepPageData() {
   var latest = sessionData[0];
   var avgHours = Math.round(sessionData.reduce(function(s, d) { return s + d.totalHours; }, 0) / sessionData.length * 10) / 10;
 
-  // Sleep debt (last 7 nights)
+  // Sleep debt (last 7 nights) — net deficit so a great night offsets a bad one.
+  // Floor at 0 once at the end (no negative debt).
   var TARGET = 7;
   var recentSessions = sessionData.slice(0, 7);
-  var debt = recentSessions.reduce(function(d, s) {
-    var deficit = TARGET - s.totalHours;
-    return d + (deficit > 0 ? deficit : 0);
-  }, 0);
-  debt = Math.round(debt * 10) / 10;
+  var totalRecentHours = recentSessions.reduce(function(s, n) { return s + n.totalHours; }, 0);
+  var netDeficit = TARGET * recentSessions.length - totalRecentHours;
+  var debt = Math.round(Math.max(0, netDeficit) * 10) / 10;
 
   // Sleep score
   // Cap nights to 21 for score consistency with the dashboard's 21-day window
   var sleepScore = scoreSleep({ avg: avgHours, nights: Math.min(sessionData.length, 21), debt: debt });
 
   var safeSet = function(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; };
-  safeSet('slp-last', latest.totalHours);
-  safeSet('slp-last-sub', 'hours · ' + Math.round(latest.efficiency) + '% efficiency');
+  // "7h 53m" — floor hours so a 7h53m night doesn't read 7.9h.
+  var formatHm = function(mins) {
+    var m = Math.max(0, Math.round(mins || 0));
+    return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
+  };
+  var formatClock = function(ms) {
+    return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  };
+  safeSet('slp-last', formatHm(latest.actualMinutes));
+  safeSet('slp-last-sub', formatClock(latest.startTime) + ' → ' + formatClock(latest.endTime) + ' · ' + Math.round(latest.efficiency) + '% efficiency');
   safeSet('slp-avg', avgHours);
-  safeSet('slp-avg-sub', 'hours/night · ' + sessionData.length + ' nights');
-  safeSet('slp-debt', debt);
+  // Append trend direction when computable (≥2 nights in each of this/last week).
+  var trend = calculateSleepTrend(sessions);
+  var avgSubBase = 'hours/night · ' + sessionData.length + ' nights';
+  if (trend && trend.direction !== 'stable') {
+    var arrow = trend.direction === 'improving' ? '↑' : '↓';
+    avgSubBase += ' · ' + arrow + ' ' + Math.abs(trend.deltaHours).toFixed(1) + 'h vs last week';
+  }
+  safeSet('slp-avg-sub', avgSubBase);
+
+  // Sleep debt: needs at least 2 nights to be meaningful (matches mobile's
+  // 721ca5a fix). Show informational subtext otherwise.
   var debtEl = document.getElementById('slp-debt');
-  if (debtEl) debtEl.style.color = debt > 7 ? 'var(--down)' : debt > 3 ? 'var(--warn)' : 'var(--cream)';
-  safeSet('slp-debt-sub', debt <= 1 ? 'well rested' : debt <= 3 ? 'mild deficit' : debt <= 7 ? 'moderate deficit' : 'high deficit');
+  if (recentSessions.length >= 2) {
+    safeSet('slp-debt', debt);
+    if (debtEl) debtEl.style.color = debt > 7 ? 'var(--down)' : debt > 3 ? 'var(--warn)' : 'var(--cream)';
+    safeSet('slp-debt-sub', debt <= 1 ? 'well rested' : debt <= 3 ? 'mild deficit' : debt <= 7 ? 'moderate deficit' : 'high deficit');
+  } else {
+    safeSet('slp-debt', '—');
+    if (debtEl) debtEl.style.color = 'var(--cream)';
+    safeSet('slp-debt-sub', 'need 2+ nights of data');
+  }
   safeSet('slp-score', sleepScore !== null ? sleepScore : '—');
   var scoreEl = document.getElementById('slp-score');
   if (scoreEl && sleepScore !== null) scoreEl.style.color = sleepScore >= 70 ? 'var(--up)' : sleepScore >= 50 ? 'var(--gold)' : 'var(--down)';
@@ -1647,6 +1671,12 @@ function renderSleepPageData() {
   // Stage breakdown chart — stacked bars
   renderSleepStageChart(sessionData);
 
+  // Bedtime consistency (matches mobile 60892e9)
+  renderBedtimeConsistency(sessionData);
+
+  // Sleep insights — filter the cached dashboard rule run to sleep-relevant cards
+  renderSleepInsights();
+
   // Calendar
   renderSleepCalendar(sessionData);
 
@@ -1655,9 +1685,118 @@ function renderSleepPageData() {
   if (cta) cta.style.display = 'block';
 }
 
+// Convert any timestamp to minutes since 6pm so bedtimes wrap around midnight
+// in a single linear axis (6pm = 0, midnight = 360, 6am = 720).
+function minutesSince6pm(ts) {
+  var d = new Date(ts);
+  var h = d.getHours();
+  var m = d.getMinutes();
+  return (h >= 18 ? h - 18 : h + 6) * 60 + m;
+}
+
+function formatMinutesSince6pm(mins) {
+  var hourSince6 = Math.floor(mins / 60);
+  var min = Math.floor(mins % 60);
+  var hour24 = (18 + hourSince6) % 24;
+  var period = hour24 < 12 ? 'AM' : 'PM';
+  var hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  return hour12 + ':' + (min < 10 ? '0' : '') + min + ' ' + period;
+}
+
+function renderBedtimeConsistency(sessionData) {
+  var container = document.getElementById('sleep-bedtime-consistency');
+  if (!container) return;
+
+  if (sessionData.length < 3) {
+    container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">Need at least 3 nights of data to compute bedtime consistency.</div>';
+    return;
+  }
+
+  var mins = sessionData.map(function(s) { return minutesSince6pm(s.startTime); });
+  var avg = mins.reduce(function(a, b) { return a + b; }, 0) / mins.length;
+  var variance = mins.reduce(function(s, v) { return s + (v - avg) * (v - avg); }, 0) / mins.length;
+  var stddev = Math.sqrt(variance);
+  var stddevMin = Math.round(stddev);
+
+  var status = stddev <= 30 ? 'consistent' : stddev <= 60 ? 'variable' : 'irregular';
+  var statusColor = stddev <= 30 ? 'var(--up)' : stddev <= 60 ? 'var(--warn)' : 'var(--down)';
+
+  var html = '';
+  html += '<div style="display:flex;gap:24px;margin-bottom:16px">';
+  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Avg Bedtime</div>';
+  html += '<div style="font-family:var(--F);font-size:24px;color:var(--cream)">' + formatMinutesSince6pm(avg) + '</div></div>';
+  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Variance</div>';
+  html += '<div style="font-family:var(--F);font-size:24px;color:var(--cream)">±' + stddevMin + ' min</div></div>';
+  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Status</div>';
+  html += '<div style="font-family:var(--F);font-size:24px;color:' + statusColor + ';text-transform:capitalize">' + status + '</div></div>';
+  html += '</div>';
+
+  html += '<div style="border-top:1px solid var(--gold-border);padding-top:12px">';
+  sessionData.slice(0, 7).forEach(function(s) {
+    var bm = minutesSince6pm(s.startTime);
+    var dev = Math.round(bm - avg);
+    var devSign = dev > 0 ? '+' : '';
+    var devColor = Math.abs(dev) <= 30 ? 'var(--up)' : Math.abs(dev) <= 60 ? 'var(--warn)' : 'var(--down)';
+    var dt = new Date(s.date + 'T12:00:00');
+    var dateLabel = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    var bedtime = new Date(s.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px">';
+    html += '<span style="color:var(--cream-dim);flex:1">' + dateLabel + '</span>';
+    html += '<span style="color:var(--cream);font-family:var(--F);flex:1;text-align:center">' + bedtime + '</span>';
+    html += '<span style="color:' + devColor + ';flex:1;text-align:right">' + devSign + dev + ' min</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function renderSleepInsights() {
+  var card = document.getElementById('sleep-insights-card');
+  var list = document.getElementById('sleep-insights-list');
+  if (!card || !list) return;
+
+  var all = window._lastInsights || [];
+  // Match mobile's filter: sleep-domain rules plus cross-domain rules whose
+  // text mentions sleep/bedtime.
+  var sleepRelated = all.filter(function(ins) {
+    if (!ins) return false;
+    if (ins.domain === 'sleep') return true;
+    var text = ((ins.headline || '') + ' ' + (ins.body || '')).toLowerCase();
+    return /sleep|bedtime|rem|deep stage/.test(text);
+  });
+
+  if (sleepRelated.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+
+  var html = sleepRelated.slice(0, 6).map(function(ins) {
+    var sev = ins.severity || ins._severity || 'neutral';
+    var sevColor = sev === 'alert' ? 'var(--down)' : sev === 'attention' ? 'var(--warn)' : sev === 'positive' ? 'var(--up)' : 'var(--cream)';
+    return '<div style="padding:12px 0;border-bottom:1px solid var(--gold-border)">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+      + '<span style="width:6px;height:6px;border-radius:50%;background:' + sevColor + ';display:inline-block"></span>'
+      + '<span style="font-family:var(--F);font-size:16px;color:var(--cream)">' + escapeHtml(ins.headline || '') + '</span>'
+      + '</div>'
+      + '<div style="font-size:13px;color:var(--cream-dim);line-height:1.5">' + escapeHtml(ins.body || '') + '</div>'
+      + '</div>';
+  }).join('');
+
+  list.innerHTML = html;
+  card.style.display = '';
+}
+
 function renderSleepStageChart(sessionData) {
   var container = document.getElementById('sleep-stage-chart');
   if (!container) return;
+
+  // <2 nights of data isn't meaningful as a chart (matches mobile 922c762).
+  if (sessionData.length < 2) {
+    container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Need at least 2 nights of data to show the stage chart.</div>';
+    return;
+  }
 
   // Show most recent N sessions (reverse to chronological order)
   var maxBars = Math.min(sessionData.length, sleepPageRange);
@@ -1675,15 +1814,16 @@ function renderSleepStageChart(sessionData) {
     var awakeH = (d.stages.awake / maxMinutes * 120);
     var dt = new Date(d.date + 'T12:00:00');
     var dayLabel = (dt.getMonth() + 1) + '/' + dt.getDate();
-    var dayOfWeek = dt.toLocaleDateString('en-US', { weekday: 'narrow' });
+    var dayOfWeek = dt.toLocaleDateString('en-US', { weekday: 'short' });
 
     html += '<div class="sleep-stage-bar">';
     html += '<div class="sleep-stage-hours">' + d.totalHours + 'h</div>';
+    // Stack order matches industry convention: awake on top, deep at bottom.
     html += '<div class="sleep-stage-stack">';
-    html += '<div class="sleep-stage-seg" style="height:' + deepH + 'px;background:var(--sleep-deep)"></div>';
+    html += '<div class="sleep-stage-seg" style="height:' + awakeH + 'px;background:rgba(245,240,232,0.15)"></div>';
     html += '<div class="sleep-stage-seg" style="height:' + remH + 'px;background:var(--sleep-rem)"></div>';
     html += '<div class="sleep-stage-seg" style="height:' + coreH + 'px;background:var(--sleep-core)"></div>';
-    html += '<div class="sleep-stage-seg" style="height:' + awakeH + 'px;background:rgba(245,240,232,0.15)"></div>';
+    html += '<div class="sleep-stage-seg" style="height:' + deepH + 'px;background:var(--sleep-deep)"></div>';
     html += '</div>';
     html += '<div class="sleep-stage-date">' + dayOfWeek + '<br>' + dayLabel + '</div>';
     html += '</div>';
@@ -1804,13 +1944,12 @@ async function loadDashboardData() {
             return computeSessionMinutes(sess).actualSleepMinutes / 60;
           });
           var avgSleep = Math.round(sessionSleepHours.reduce(function(s, h) { return s + h; }, 0) / sessionSleepHours.length * 10) / 10;
+          // Sleep debt: net deficit across the last 7 nights, floor at 0 once at the end.
           var TARGET_SLEEP = 7;
           var recentSessions = sessionSleepHours.slice(0, 7);
-          var sleepDebt = recentSessions.reduce(function(debt, h) {
-            var deficit = TARGET_SLEEP - h;
-            return debt + (deficit > 0 ? deficit : 0);
-          }, 0);
-          sleepDebt = Math.round(sleepDebt * 10) / 10;
+          var totalRecentSleep = recentSessions.reduce(function(s, h) { return s + h; }, 0);
+          var sleepDebtNet = TARGET_SLEEP * recentSessions.length - totalRecentSleep;
+          var sleepDebt = Math.round(Math.max(0, sleepDebtNet) * 10) / 10;
           var totalHours = Math.round((mostRecent.actualSleepMinutes / 60) * 10) / 10;
           var totalMinutes = Math.round(mostRecent.actualSleepMinutes);
           var stageBreakdown = {};
@@ -1829,20 +1968,33 @@ async function loadDashboardData() {
         }
       }
 
-      // Steps
+      // Steps — source-deduped to avoid iPhone+Apple Watch double-count.
       var stepsRows = byType['step_count'] || [];
-      var todaySteps = stepsRows.filter(function(r) { return r.start_date && r.start_date.startsWith(today); })
-        .reduce(function(s, r) { return s + parseFloat(r.value||0); }, 0);
+      var todaySteps = dedupedDailyTotal(stepsRows, today);
       if (todaySteps === 0 && stepsRows.length > 0) todaySteps = parseFloat(stepsRows[0].value || 0);
       if (todaySteps > 0) metrics.steps = Math.round(todaySteps);
 
-      // HR — prefer resting HR (daily summary, stable) over instantaneous HR (fluctuates)
+      // HR — prefer Apple's resting_heart_rate when present (Apple Watch only).
+      // For 3rd-party wearables (Garmin/Oura/etc.) only raw heart_rate is written,
+      // so estimate resting from the 10th percentile of recent readings — a
+      // standard clinical approximation when no dedicated resting measurement exists.
       var restingHrRows = byType['resting_heart_rate'] || [];
       var instantHrRows = byType['heart_rate'] || [];
-      var hrRows = restingHrRows.length > 0 ? restingHrRows : instantHrRows;
-      if (hrRows.length > 0) {
-        metrics.hr = Math.round(parseFloat(hrRows[0].value));
-        timestamps.heart_rate = hrRows[0].recorded_at;
+      if (restingHrRows.length > 0) {
+        metrics.hr = Math.round(parseFloat(restingHrRows[0].value));
+        timestamps.heart_rate = restingHrRows[0].recorded_at;
+      } else if (instantHrRows.length > 0) {
+        var bpms = [];
+        for (var hi = 0; hi < Math.min(instantHrRows.length, 100); hi++) {
+          var bpm = parseFloat(instantHrRows[hi].value);
+          if (isFinite(bpm) && bpm >= 30 && bpm <= 200) bpms.push(bpm);
+        }
+        if (bpms.length > 0) {
+          bpms.sort(function(a, b) { return a - b; });
+          var p10Idx = Math.max(0, Math.floor(bpms.length * 0.1));
+          metrics.hr = Math.round(bpms[p10Idx]);
+          timestamps.heart_rate = instantHrRows[0].recorded_at;
+        }
       }
 
       // HRV — SDNN from Apple Watch (ms)
@@ -2120,8 +2272,7 @@ function renderHealthStats(byType, today) {
   var stepsData = [];
   stepsKeys.forEach(function(k) { if (byType[k]) stepsData = stepsData.concat(byType[k]); });
   if (stepsData.length > 0) {
-    var todaySteps = stepsData.filter(function(r) { return r.start_date && r.start_date.startsWith(today); })
-      .reduce(function(s, r) { return s + parseFloat(r.value || 0); }, 0);
+    var todaySteps = dedupedDailyTotal(stepsData, today);
     if (todaySteps === 0) todaySteps = stepsData
       .filter(function(r) { return r.start_date; })
       .slice(0, 3)
@@ -2154,8 +2305,7 @@ function renderHealthStats(byType, today) {
   var calData = [];
   calKeys.forEach(function(k) { if (byType[k]) calData = calData.concat(byType[k]); });
   if (calData.length > 0) {
-    var tc = calData.filter(function(r) { return r.start_date && r.start_date.startsWith(today); })
-      .reduce(function(s, r) { return s + parseFloat(r.value || 0); }, 0);
+    var tc = dedupedDailyTotal(calData, today);
     if (tc === 0) tc = calData
       .filter(function(r) { return r.start_date; })
       .slice(0, 3)
@@ -2230,24 +2380,31 @@ function renderActivityCards(byType, today) {
   }
 
   function getDailyTotal(rows, dateStr) {
-    var total = 0;
-    (rows || []).forEach(function(r) {
-      if (r.start_date && r.start_date.startsWith(dateStr)) {
-        total += parseFloat(r.value || 0);
-      }
-    });
-    return total;
+    return dedupedDailyTotal(rows, dateStr);
   }
 
   function getWeeklyAvg(rows) {
     var now = new Date();
-    var dayTotals = {};
+    // Source-deduped per-day totals: max(value) per (day, source), then max
+    // across sources per day. Matches dedupedDailyTotal's logic.
+    var perDayPerSource = {};
     (rows || []).forEach(function(r) {
-      var day = r.start_date ? r.start_date.split('T')[0] : null;
+      var day = localDateStrOf(r);
       if (!day) return;
       var val = parseFloat(r.value || 0);
       if (!isFinite(val)) return;
-      dayTotals[day] = (dayTotals[day] || 0) + val;
+      var src = r.source_id || r.source_name || 'unknown';
+      if (!perDayPerSource[day]) perDayPerSource[day] = {};
+      if (perDayPerSource[day][src] == null || val > perDayPerSource[day][src]) {
+        perDayPerSource[day][src] = val;
+      }
+    });
+    var dayTotals = {};
+    Object.keys(perDayPerSource).forEach(function(day) {
+      var maxVal = 0;
+      var sources = perDayPerSource[day];
+      for (var s in sources) { if (sources[s] > maxVal) maxVal = sources[s]; }
+      dayTotals[day] = maxVal;
     });
     var sum = 0, count = 0;
     for (var d = 0; d < 7; d++) {
@@ -2330,45 +2487,47 @@ function renderActivityCards(byType, today) {
     document.getElementById('drv-respiratory').style.display = 'none';
   }
 
-  // Walking/running distance (meters → miles)
-  var distRows = byType['distance_walking_running'] || [];
-  var distTodayM = getDailyTotal(distRows, today);
-  var distTodayMi = distTodayM * 0.000621371;
-  if (distTodayMi > 0.01 || distRows.length > 0) {
-    anyData = true;
-    var distDayTotals = {};
-    distRows.forEach(function(r) {
-      var day = r.start_date ? r.start_date.split('T')[0] : null;
-      if (!day) return;
-      distDayTotals[day] = (distDayTotals[day] || 0) + parseFloat(r.value || 0);
-    });
-    var distSum = 0, distCount = 0, now = new Date();
-    for (var d = 0; d < 7; d++) {
-      var dt = new Date(now); dt.setDate(dt.getDate() - d);
-      var ds = localDateStr(dt);
-      if (distDayTotals[ds] !== undefined) { distSum += distDayTotals[ds]; distCount++; }
-    }
-    var distAvgMi = distCount > 0 ? (distSum / distCount) * 0.000621371 : 0;
-    var showMi = distTodayMi > 0.01 ? distTodayMi : distAvgMi;
-    var distScore = scoreDistance(showMi);
-    document.getElementById('drv-distance-val').textContent = showMi.toFixed(1) + ' mi';
-    document.getElementById('drv-distance-status').textContent = distTodayMi > 0.01 ? '7-day avg: ' + distAvgMi.toFixed(1) + ' mi/day' : 'Weekly avg (no data today)';
-    document.getElementById('drv-distance-status').className = 'driver-status';
-    var db = document.getElementById('drv-distance-bar');
-    if (db) { db.style.width = distScore + '%'; db.className = 'driver-bar-fill ' + (distScore >= 70 ? 'good' : distScore >= 40 ? 'fair' : distScore > 0 ? 'low' : ''); }
-  } else {
-    document.getElementById('drv-distance').style.display = 'none';
-  }
+  // Walking distance is intentionally NOT shown on the dashboard — matches
+  // the mobile app, which only surfaces Sleep/Activity/Nutrition tiles plus
+  // an HR/HRV inline row. Distance is still source-deduped via getDailyTotal
+  // and remains available for chat tools and insight rules.
 
-  section.style.display = anyData ? '' : 'none';
+  // When no activity data is present, replace the grid with actionable
+  // guidance instead of hiding the section silently. Matches mobile 4ef79a5.
+  var grid = document.getElementById('activity-cards-grid');
+  if (!anyData && grid) {
+    section.style.display = '';
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:40px">'
+      + '<div class="empty-state-icon">⌚️</div>'
+      + '<div class="empty-state-text">No activity data yet</div>'
+      + '<div style="font-size:12px;color:var(--cream-dim);margin-top:8px;line-height:1.6;max-width:380px;margin-left:auto;margin-right:auto">Sync your Apple Watch through the Healix mobile app and steps, distance, calories, and exercise minutes show up here automatically.</div>'
+      + '<button class="upload-btn" onclick="openConnectHealthBiteModal()" style="margin:16px auto 0;display:flex">Connect Healix App →</button>'
+      + '</div>';
+  } else {
+    section.style.display = anyData ? '' : 'none';
+  }
 }
 
 function updateMiniChart(id, data, today) {
-  var dayMap = {};
+  // Source-deduped per-day totals so iPhone+Watch overlap doesn't inflate bars.
+  var perDayPerSource = {};
   data.forEach(function(r) {
-    var day = r.start_date ? r.start_date.split('T')[0] : null;
+    var day = localDateStrOf(r);
     if (!day) return;
-    dayMap[day] = (dayMap[day] || 0) + parseFloat(r.value || 0);
+    var v = parseFloat(r.value || 0);
+    if (!isFinite(v)) return;
+    var src = r.source_id || r.source_name || 'unknown';
+    if (!perDayPerSource[day]) perDayPerSource[day] = {};
+    if (perDayPerSource[day][src] == null || v > perDayPerSource[day][src]) {
+      perDayPerSource[day][src] = v;
+    }
+  });
+  var dayMap = {};
+  Object.keys(perDayPerSource).forEach(function(day) {
+    var maxV = 0;
+    var srcs = perDayPerSource[day];
+    for (var s in srcs) { if (srcs[s] > maxV) maxV = srcs[s]; }
+    dayMap[day] = maxV;
   });
   var days = Object.keys(dayMap).sort().slice(-7);
   var vals = days.map(function(d) { return dayMap[d]; });
@@ -2387,7 +2546,12 @@ function renderDashMeals(meals, today) {
   var el = document.getElementById('d-meals');
   var emojis = { breakfast:'🍳', lunch:'🥗', dinner:'🍽', snack:'🍎', cooked:'🍳', drink:'🥤', dessert:'🍰', 'ate out':'🍽', beverage:'🥤', supplement:'💊', medication:'💊', alcohol:'🍷', other:'📦' };
   if (todayMeals.length === 0) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🍽</div><div class="empty-state-text">No intake logged today</div></div>';
+    el.innerHTML = '<div class="empty-state">'
+      + '<div class="empty-state-icon">🍽</div>'
+      + '<div class="empty-state-text">No intake logged today</div>'
+      + '<div style="font-size:12px;color:var(--cream-dim);margin-top:6px">Logging meals powers your protein, fiber, and micronutrient insights.</div>'
+      + '<button class="upload-btn" onclick="showPage(\'meals\', null);setTimeout(function(){setMealDateTimeDefault();openModal(\'meal-modal\')},50)" style="margin:14px auto 0;display:flex">+ Log Intake</button>'
+      + '</div>';
     return;
   }
   el.innerHTML = todayMeals.slice(0, 4).map(function(m) {
@@ -2469,6 +2633,31 @@ function getMacroTargets() {
   if (goal === 'lose_weight') calTarget = Math.round(tdee * 0.8);
   else if (goal === 'gain_strength') calTarget = Math.round(tdee + 300);
 
+  // Custom targets (mobile commit 8d8e870): if the user has set target_*_pct
+  // and/or target_calories on their profile, those override the goal-based
+  // calculation. Targets are stored as percentages and converted to grams
+  // here using the (optionally overridden) calorie target.
+  var hasCustomMacros = p.target_protein_pct != null
+    && p.target_carbs_pct != null
+    && p.target_fat_pct != null;
+  if (hasCustomMacros || p.target_calories != null) {
+    if (p.target_calories != null) calTarget = Math.round(parseFloat(p.target_calories));
+    if (hasCustomMacros) {
+      var pPct = parseFloat(p.target_protein_pct) / 100;
+      var cPct = parseFloat(p.target_carbs_pct) / 100;
+      var fPct = parseFloat(p.target_fat_pct) / 100;
+      return {
+        cal: calTarget,
+        prot: Math.round(calTarget * pPct / 4),
+        carbs: Math.round(calTarget * cPct / 4),
+        fat: Math.round(calTarget * fPct / 9),
+        isCustom: true
+      };
+    }
+    // Calorie override only; macros still goal-based, recomputed against the
+    // overridden calorie total below.
+  }
+
   // Protein: 1g/lb for weight loss and strength, 0.8g/lb otherwise
   var weightLbs = weightKg * 2.205;
   var protTarget = (goal === 'lose_weight' || goal === 'gain_strength')
@@ -2482,7 +2671,152 @@ function getMacroTargets() {
   var carbTarget = Math.round((calTarget - protTarget * 4 - fatTarget * 9) / 4);
   if (carbTarget < 50) carbTarget = 50;
 
-  return { cal: calTarget, prot: protTarget, fat: fatTarget, carbs: carbTarget };
+  return { cal: calTarget, prot: protTarget, fat: fatTarget, carbs: carbTarget, isCustom: false };
+}
+
+// ── Macro target editing ──
+function openMacroTargetModal() {
+  var p = window.userProfileData || {};
+  var pEl = document.getElementById('mt-prot');
+  var cEl = document.getElementById('mt-carbs');
+  var fEl = document.getElementById('mt-fat');
+  var calEl = document.getElementById('mt-cal');
+  var warn = document.getElementById('mt-pct-warn');
+  if (warn) warn.style.display = 'none';
+  if (pEl) pEl.value = p.target_protein_pct != null ? p.target_protein_pct : '';
+  if (cEl) cEl.value = p.target_carbs_pct != null ? p.target_carbs_pct : '';
+  if (fEl) fEl.value = p.target_fat_pct != null ? p.target_fat_pct : '';
+  if (calEl) calEl.value = p.target_calories != null ? p.target_calories : '';
+  openModal('macro-target-modal');
+}
+
+async function saveMacroTargets() {
+  var session = getSession(); if (!session || !currentUser) return;
+  var pEl = document.getElementById('mt-prot');
+  var cEl = document.getElementById('mt-carbs');
+  var fEl = document.getElementById('mt-fat');
+  var calEl = document.getElementById('mt-cal');
+  var warn = document.getElementById('mt-pct-warn');
+
+  var pVal = pEl && pEl.value !== '' ? parseInt(pEl.value, 10) : null;
+  var cVal = cEl && cEl.value !== '' ? parseInt(cEl.value, 10) : null;
+  var fVal = fEl && fEl.value !== '' ? parseInt(fEl.value, 10) : null;
+  var calVal = calEl && calEl.value !== '' ? parseInt(calEl.value, 10) : null;
+
+  // If any macro pct is set, all three must be set and sum to 100 (±1 for rounding).
+  var anyMacro = pVal != null || cVal != null || fVal != null;
+  if (anyMacro) {
+    if (pVal == null || cVal == null || fVal == null) {
+      if (warn) { warn.textContent = 'Set all three percentages, or leave all three blank.'; warn.style.display = 'block'; }
+      return;
+    }
+    var sum = pVal + cVal + fVal;
+    if (Math.abs(sum - 100) > 1) {
+      if (warn) { warn.textContent = 'Percentages must add up to 100% (you have ' + sum + '%).'; warn.style.display = 'block'; }
+      return;
+    }
+  }
+
+  var patch = {
+    target_protein_pct: pVal,
+    target_carbs_pct: cVal,
+    target_fat_pct: fVal,
+    target_calories: calVal
+  };
+
+  try {
+    var resp = await supabaseRequest(
+      '/rest/v1/profiles?auth_user_id=eq.' + currentUser.id,
+      'PATCH', patch, session.access_token
+    );
+    if (resp && resp.error) {
+      if (warn) { warn.textContent = 'Save failed: ' + resp.error.message; warn.style.display = 'block'; }
+      return;
+    }
+    // Update local profile cache so renderMacroSplit picks up the change immediately.
+    if (window.userProfileData) {
+      window.userProfileData.target_protein_pct = pVal;
+      window.userProfileData.target_carbs_pct = cVal;
+      window.userProfileData.target_fat_pct = fVal;
+      window.userProfileData.target_calories = calVal;
+    }
+    closeModal('macro-target-modal');
+    // Re-render meals page so the new targets show up.
+    if (typeof loadMealsPage === 'function') loadMealsPage();
+  } catch (e) {
+    if (warn) { warn.textContent = 'Save failed: ' + (e && e.message || 'unknown error'); warn.style.display = 'block'; }
+  }
+}
+
+function resetMacroTargets() {
+  var pEl = document.getElementById('mt-prot');
+  var cEl = document.getElementById('mt-carbs');
+  var fEl = document.getElementById('mt-fat');
+  var calEl = document.getElementById('mt-cal');
+  if (pEl) pEl.value = '';
+  if (cEl) cEl.value = '';
+  if (fEl) fEl.value = '';
+  if (calEl) calEl.value = '';
+  // Hitting Save with all blanks clears the custom targets.
+  saveMacroTargets();
+}
+
+// Render the P/C/F macro split (stacked bar + per-macro rows with grams,
+// percentage, and target deviation). Used on the meals page aggregate view.
+// Mirrors mobile commit ad5be2e.
+function renderMacroSplit(prot, carbs, fat, targets) {
+  var card = document.getElementById('agg-macro-split-card');
+  var bar = document.getElementById('agg-macro-bar');
+  var rows = document.getElementById('agg-macro-rows');
+  var note = document.getElementById('agg-macro-target-note');
+  if (!card || !bar || !rows) return;
+
+  var pCal = (prot || 0) * 4;
+  var cCal = (carbs || 0) * 4;
+  var fCal = (fat || 0) * 9;
+  var totalCal = pCal + cCal + fCal;
+  if (totalCal <= 0) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+
+  var pPct = Math.round(pCal / totalCal * 100);
+  var cPct = Math.round(cCal / totalCal * 100);
+  var fPct = 100 - pPct - cPct;
+
+  // Stacked bar — colors mirror the mobile palette
+  bar.innerHTML = ''
+    + '<div style="width:' + pPct + '%;background:#6fcf8a"></div>'
+    + '<div style="width:' + cPct + '%;background:#B8975A"></div>'
+    + '<div style="width:' + fPct + '%;background:#e0a070"></div>';
+
+  // Compute target percentages for the comparison rows
+  var tCal = (targets.prot || 0) * 4 + (targets.carbs || 0) * 4 + (targets.fat || 0) * 9;
+  var tProtPct = tCal > 0 ? Math.round((targets.prot || 0) * 4 / tCal * 100) : 0;
+  var tCarbPct = tCal > 0 ? Math.round((targets.carbs || 0) * 4 / tCal * 100) : 0;
+  var tFatPct = 100 - tProtPct - tCarbPct;
+
+  // Amber when actual is more than 10 percentage points off the target
+  var deviationColor = function(actual, target) {
+    return Math.abs(actual - target) > 10 ? 'var(--warn)' : 'var(--cream-dim)';
+  };
+
+  var rowHtml = function(label, color, actualPct, actualG, targetPct) {
+    return '<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--gold-border);font-size:13px">'
+      + '<span style="width:8px;height:8px;border-radius:50%;background:' + color + ';flex-shrink:0"></span>'
+      + '<span style="flex:1;color:var(--cream)">' + label + '</span>'
+      + '<span style="color:var(--cream);font-family:var(--F);min-width:60px;text-align:right">' + actualG + 'g</span>'
+      + '<span style="color:' + deviationColor(actualPct, targetPct) + ';min-width:80px;text-align:right">' + actualPct + '% <span style="color:var(--muted);font-size:11px">/ ' + targetPct + '% target</span></span>'
+      + '</div>';
+  };
+
+  rows.innerHTML = ''
+    + rowHtml('Protein', '#6fcf8a', pPct, prot || 0, tProtPct)
+    + rowHtml('Carbs', '#B8975A', cPct, carbs || 0, tCarbPct)
+    + rowHtml('Fat', '#e0a070', fPct, fat || 0, tFatPct);
+
+  note.textContent = targets.isCustom ? '· using your custom targets' : '';
 }
 
 function animateMacroRings(prot, carbs, fat, targets) {
@@ -2827,6 +3161,39 @@ function localDateStr(date) {
     + String(date.getDate()).padStart(2,'0');
 }
 
+// Local-date key for a sample row. Comparing r.start_date.startsWith(YYYY-MM-DD)
+// matches the UTC prefix, which silently shifts evening samples for users east
+// of UTC into the wrong day. Always derive the local date from the parsed
+// timestamp instead.
+function localDateStrOf(row) {
+  var iso = row && (row.start_date || row.recorded_at);
+  if (!iso) return null;
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return localDateStr(d);
+}
+
+// Source-deduped daily total for cumulative metrics (steps, distance, active
+// energy, exercise minutes). Mobile's get_health_cumulative_aggregates RPC
+// (mobile commit 333d2a6) does the same logic in Postgres: take MAX(value)
+// per (day, source_id) to fold same-source re-syncs, then MAX across sources
+// so iPhone + Apple Watch reporting the same daily total don't double up.
+function dedupedDailyTotal(rows, dateStr) {
+  if (!rows) return 0;
+  var perSource = {};
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (localDateStrOf(r) !== dateStr) continue;
+    var v = parseFloat(r.value || 0);
+    if (!isFinite(v)) continue;
+    var src = r.source_id || r.source_name || 'unknown';
+    if (perSource[src] == null || v > perSource[src]) perSource[src] = v;
+  }
+  var max = 0;
+  for (var k in perSource) { if (perSource[k] > max) max = perSource[k]; }
+  return max;
+}
+
 function updateMealsDateLabel() {
   var label = document.getElementById('meals-date-label');
   var todayBtn = document.getElementById('meals-today-btn');
@@ -2880,7 +3247,12 @@ async function loadMealsPage() {
     );
     if (!meals || meals.error || !Array.isArray(meals)) {
       console.log('[Healix] meals fetch failed or empty:', meals);
-      document.getElementById('meals-list').innerHTML = '<div class="empty-state" style="padding:40px"><div class="empty-state-icon">🍽</div><div class="empty-state-text">No intake logged yet.</div></div>';
+      document.getElementById('meals-list').innerHTML = '<div class="empty-state" style="padding:40px">'
+        + '<div class="empty-state-icon">🍽</div>'
+        + '<div class="empty-state-text">No intake logged yet.</div>'
+        + '<div style="font-size:12px;color:var(--cream-dim);margin-top:8px;line-height:1.6">Tracking what you consume powers your nutrition insights and helps Healix give personalized advice.</div>'
+        + '<button class="upload-btn" onclick="setMealDateTimeDefault();openModal(\'meal-modal\')" style="margin:16px auto 0;display:flex">+ Log Intake</button>'
+        + '</div>';
       return;
     }
     console.log('[Healix] meals fetched:', meals.length, 'mealsDate=', localDateStr(mealsDate));
@@ -3116,6 +3488,9 @@ function renderMealsAggregateView(meals, nutrients, range) {
   document.getElementById('agg-protein').innerHTML   = (avgProt || '—') + '<span style="font-size:14px;color:var(--muted)">g</span>';
   document.getElementById('agg-carbs').innerHTML     = (avgCarb || '—') + '<span style="font-size:14px;color:var(--muted)">g</span>';
   document.getElementById('agg-fat').innerHTML       = (avgFat || '—') + '<span style="font-size:14px;color:var(--muted)">g</span>';
+
+  // Macro split breakdown (mobile ad5be2e). Show only when meal data exists.
+  renderMacroSplit(avgProt, avgCarb, avgFat, targets);
 
 
 
@@ -8660,14 +9035,9 @@ function computeEnergyBalance(ctx, days) {
       }
     });
 
-    // Calories out (from HealthKit)
-    var active = 0, basal = 0;
-    activeRows.forEach(function(r) {
-      if (r.start_date && r.start_date.startsWith(dateStr)) active += parseFloat(r.value || 0);
-    });
-    basalRows.forEach(function(r) {
-      if (r.start_date && r.start_date.startsWith(dateStr)) basal += parseFloat(r.value || 0);
-    });
+    // Calories out (from HealthKit) — source-deduped to handle iPhone+Watch overlap.
+    var active = dedupedDailyTotal(activeRows, dateStr);
+    var basal = dedupedDailyTotal(basalRows, dateStr);
 
     var calOut = Math.round(active + basal);
     if (calIn > 0 && calOut > 0) {

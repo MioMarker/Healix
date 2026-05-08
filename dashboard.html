@@ -305,16 +305,6 @@
               <div class="driver-pct" id="drv-respiratory-pct" style="display:none"></div>
               <a class="chat-ask driver-chat-ask" id="drv-respiratory-chat" style="display:none"><span class="chat-ask-arrow">→</span> Ask Healix</a>
             </div>
-            <div class="driver-card" id="drv-distance">
-              <div class="driver-icon">◆</div>
-              <div class="driver-label">Walking Distance</div>
-              <div class="driver-val" id="drv-distance-val">—</div>
-              <div class="driver-bar-track"><div class="driver-bar-fill" id="drv-distance-bar"></div></div>
-              <div class="driver-status" id="drv-distance-status"></div>
-              <div class="driver-freshness" id="drv-distance-freshness"></div>
-              <div class="driver-pct" id="drv-distance-pct" style="display:none"></div>
-              <a class="chat-ask driver-chat-ask" id="drv-distance-chat" style="display:none"><span class="chat-ask-arrow">→</span> Ask Healix</a>
-            </div>
           </div>
         </div>
 
@@ -552,6 +542,16 @@
           </div>
         </div>
 
+        <!-- Macro split (P/C/F ratio with stacked bar) -->
+        <div class="card" id="agg-macro-split-card" style="margin-bottom:16px;display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="card-label" style="margin:0">Macro Split <span id="agg-macro-target-note" style="font-size:10px;color:var(--muted);font-weight:400;margin-left:8px"></span></div>
+            <button onclick="openMacroTargetModal()" style="background:none;border:1px solid var(--gold-border);color:var(--gold);font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:6px 12px;cursor:pointer;font-family:var(--B)">Edit Targets</button>
+          </div>
+          <div id="agg-macro-bar" style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--dark-3);margin-bottom:14px"></div>
+          <div id="agg-macro-rows"></div>
+        </div>
+
         <!-- Per-day breakdown table -->
         <div class="card" style="padding:0;overflow:hidden">
           <div style="padding:16px 20px;border-bottom:1px solid var(--gold-border)">
@@ -634,6 +634,18 @@
         </div>
       </div>
 
+      <!-- Bedtime consistency -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-label" style="margin-bottom:16px">Bedtime Consistency</div>
+        <div id="sleep-bedtime-consistency"></div>
+      </div>
+
+      <!-- Sleep insights -->
+      <div class="card" id="sleep-insights-card" style="margin-top:16px;display:none">
+        <div class="card-label" style="margin-bottom:16px">Sleep Insights</div>
+        <div id="sleep-insights-list"></div>
+      </div>
+
       <!-- Calendar view -->
       <div class="card" style="margin-top:16px">
         <div class="card-label" style="margin-bottom:16px">Sleep Calendar</div>
@@ -659,7 +671,9 @@
       <div id="sleep-empty" style="display:none">
         <div class="empty-state" style="padding:60px">
           <div class="empty-state-icon">🌙</div>
-          <div class="empty-state-text">No sleep data yet.<br>Connect the Healix app to sync your sleep from Apple Watch.</div>
+          <div class="empty-state-text">No sleep data yet</div>
+          <div style="font-size:12px;color:var(--cream-dim);margin-top:8px;line-height:1.6;max-width:420px;margin-left:auto;margin-right:auto">Wear your Apple Watch (or other sleep tracker) to bed and let the Healix mobile app sync — your stages, debt, and bedtime trends show up here automatically.</div>
+          <button class="upload-btn" onclick="openConnectHealthBiteModal()" style="margin:16px auto 0;display:flex">Connect Healix App →</button>
         </div>
       </div>
     </div>
@@ -1307,6 +1321,39 @@
   </div>
 </div>
 
+<!-- ── MACRO TARGET MODAL ── -->
+<div class="modal-overlay" id="macro-target-modal" onclick="closeModalOutside(event,'macro-target-modal')">
+  <div class="modal" style="position:relative;width:480px">
+    <button class="modal-close" onclick="closeModal('macro-target-modal')">&#10005;</button>
+    <div class="modal-title">Macro <em>Targets</em></div>
+    <div class="modal-sub">Set the protein, carb, and fat percentages you're aiming for. The three values must add up to 100%. Calorie target is optional — leave blank to use the goal-based calculation.</div>
+    <div class="modal-row">
+      <div class="modal-field" style="flex:1">
+        <label class="modal-label">Protein %</label>
+        <input class="modal-input" id="mt-prot" type="number" min="0" max="100" step="1" placeholder="30">
+      </div>
+      <div class="modal-field" style="flex:1">
+        <label class="modal-label">Carbs %</label>
+        <input class="modal-input" id="mt-carbs" type="number" min="0" max="100" step="1" placeholder="40">
+      </div>
+      <div class="modal-field" style="flex:1">
+        <label class="modal-label">Fat %</label>
+        <input class="modal-input" id="mt-fat" type="number" min="0" max="100" step="1" placeholder="30">
+      </div>
+    </div>
+    <div id="mt-pct-warn" style="font-size:11px;color:var(--warn);margin-top:-4px;margin-bottom:8px;display:none">Percentages must add up to 100%.</div>
+    <div class="modal-field">
+      <label class="modal-label">Daily calorie target <span style="color:var(--muted);font-size:9px;letter-spacing:.1em">(optional)</span></label>
+      <input class="modal-input" id="mt-cal" type="number" min="800" max="6000" step="50" placeholder="e.g. 2200 — blank uses your goal-based default">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="resetMacroTargets()" style="margin-right:auto">Reset to default</button>
+      <button class="modal-btn-secondary" onclick="closeModal('macro-target-modal')">Cancel</button>
+      <button class="modal-btn-primary" onclick="saveMacroTargets()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── HEALTHBITE CONNECT MODAL ── -->
 <div class="modal-overlay" id="healthbite-connect-modal" onclick="closeModalOutside(event,'healthbite-connect-modal')">
   <div class="modal" style="position:relative;width:520px">
@@ -1436,8 +1483,8 @@
 
 <script src="config.js"></script>
 <script src="components/confirm-modal.js"></script>
-<script src="insights-engine.js?v=20260413a"></script>
-<script src="dashboard.js?v=20260330a"></script>
+<script src="insights-engine.js?v=20260508b"></script>
+<script src="dashboard.js?v=20260508h"></script>
 <script src="chat-widget.js"></script>
 
 <datalist id="ex-presets"><option value="Bench Press"><option value="Overhead Press"><option value="Incline Press"><option value="Dumbbell Fly"><option value="Pull-ups"><option value="Chin-ups"><option value="Barbell Row"><option value="Cable Row"><option value="Lat Pulldown"><option value="Dumbbell Curl"><option value="Hammer Curl"><option value="Tricep Dip"><option value="Tricep Pushdown"><option value="Skull Crushers"><option value="Squat"><option value="Front Squat"><option value="Leg Press"><option value="Romanian Deadlift"><option value="Deadlift"><option value="Hip Thrust"><option value="Lunges"><option value="Leg Curl"><option value="Leg Extension"><option value="Plank"><option value="Cable Crunch"><option value="Ab Wheel"><option value="Face Pull"><option value="Running"><option value="Cycling"><option value="Row Machine"><option value="Jump Rope"></datalist>
