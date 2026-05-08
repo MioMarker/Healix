@@ -280,6 +280,7 @@ async function init() {
       // Run deterministic insight engine
       var insightCtx = buildInsightContext();
       var insights = runInsightRules(insightCtx);
+      window._lastInsights = insights;
       renderInsightFeed(insights);
       // Show upgrade modal if redirected from chat.html
       if (window.location.search.indexOf('upgrade=1') !== -1) {
@@ -1608,14 +1609,38 @@ function renderSleepPageData() {
   var sleepScore = scoreSleep({ avg: avgHours, nights: Math.min(sessionData.length, 21), debt: debt });
 
   var safeSet = function(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; };
-  safeSet('slp-last', latest.totalHours);
-  safeSet('slp-last-sub', 'hours · ' + Math.round(latest.efficiency) + '% efficiency');
+  // "7h 53m" — floor hours so a 7h53m night doesn't read 7.9h.
+  var formatHm = function(mins) {
+    var m = Math.max(0, Math.round(mins || 0));
+    return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
+  };
+  var formatClock = function(ms) {
+    return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  };
+  safeSet('slp-last', formatHm(latest.actualMinutes));
+  safeSet('slp-last-sub', formatClock(latest.startTime) + ' → ' + formatClock(latest.endTime) + ' · ' + Math.round(latest.efficiency) + '% efficiency');
   safeSet('slp-avg', avgHours);
-  safeSet('slp-avg-sub', 'hours/night · ' + sessionData.length + ' nights');
-  safeSet('slp-debt', debt);
+  // Append trend direction when computable (≥2 nights in each of this/last week).
+  var trend = calculateSleepTrend(sessions);
+  var avgSubBase = 'hours/night · ' + sessionData.length + ' nights';
+  if (trend && trend.direction !== 'stable') {
+    var arrow = trend.direction === 'improving' ? '↑' : '↓';
+    avgSubBase += ' · ' + arrow + ' ' + Math.abs(trend.deltaHours).toFixed(1) + 'h vs last week';
+  }
+  safeSet('slp-avg-sub', avgSubBase);
+
+  // Sleep debt: needs at least 2 nights to be meaningful (matches mobile's
+  // 721ca5a fix). Show informational subtext otherwise.
   var debtEl = document.getElementById('slp-debt');
-  if (debtEl) debtEl.style.color = debt > 7 ? 'var(--down)' : debt > 3 ? 'var(--warn)' : 'var(--cream)';
-  safeSet('slp-debt-sub', debt <= 1 ? 'well rested' : debt <= 3 ? 'mild deficit' : debt <= 7 ? 'moderate deficit' : 'high deficit');
+  if (recentSessions.length >= 2) {
+    safeSet('slp-debt', debt);
+    if (debtEl) debtEl.style.color = debt > 7 ? 'var(--down)' : debt > 3 ? 'var(--warn)' : 'var(--cream)';
+    safeSet('slp-debt-sub', debt <= 1 ? 'well rested' : debt <= 3 ? 'mild deficit' : debt <= 7 ? 'moderate deficit' : 'high deficit');
+  } else {
+    safeSet('slp-debt', '—');
+    if (debtEl) debtEl.style.color = 'var(--cream)';
+    safeSet('slp-debt-sub', 'need 2+ nights of data');
+  }
   safeSet('slp-score', sleepScore !== null ? sleepScore : '—');
   var scoreEl = document.getElementById('slp-score');
   if (scoreEl && sleepScore !== null) scoreEl.style.color = sleepScore >= 70 ? 'var(--up)' : sleepScore >= 50 ? 'var(--gold)' : 'var(--down)';
@@ -1646,6 +1671,12 @@ function renderSleepPageData() {
   // Stage breakdown chart — stacked bars
   renderSleepStageChart(sessionData);
 
+  // Bedtime consistency (matches mobile 60892e9)
+  renderBedtimeConsistency(sessionData);
+
+  // Sleep insights — filter the cached dashboard rule run to sleep-relevant cards
+  renderSleepInsights();
+
   // Calendar
   renderSleepCalendar(sessionData);
 
@@ -1654,9 +1685,118 @@ function renderSleepPageData() {
   if (cta) cta.style.display = 'block';
 }
 
+// Convert any timestamp to minutes since 6pm so bedtimes wrap around midnight
+// in a single linear axis (6pm = 0, midnight = 360, 6am = 720).
+function minutesSince6pm(ts) {
+  var d = new Date(ts);
+  var h = d.getHours();
+  var m = d.getMinutes();
+  return (h >= 18 ? h - 18 : h + 6) * 60 + m;
+}
+
+function formatMinutesSince6pm(mins) {
+  var hourSince6 = Math.floor(mins / 60);
+  var min = Math.floor(mins % 60);
+  var hour24 = (18 + hourSince6) % 24;
+  var period = hour24 < 12 ? 'AM' : 'PM';
+  var hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  return hour12 + ':' + (min < 10 ? '0' : '') + min + ' ' + period;
+}
+
+function renderBedtimeConsistency(sessionData) {
+  var container = document.getElementById('sleep-bedtime-consistency');
+  if (!container) return;
+
+  if (sessionData.length < 3) {
+    container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">Need at least 3 nights of data to compute bedtime consistency.</div>';
+    return;
+  }
+
+  var mins = sessionData.map(function(s) { return minutesSince6pm(s.startTime); });
+  var avg = mins.reduce(function(a, b) { return a + b; }, 0) / mins.length;
+  var variance = mins.reduce(function(s, v) { return s + (v - avg) * (v - avg); }, 0) / mins.length;
+  var stddev = Math.sqrt(variance);
+  var stddevMin = Math.round(stddev);
+
+  var status = stddev <= 30 ? 'consistent' : stddev <= 60 ? 'variable' : 'irregular';
+  var statusColor = stddev <= 30 ? 'var(--up)' : stddev <= 60 ? 'var(--warn)' : 'var(--down)';
+
+  var html = '';
+  html += '<div style="display:flex;gap:24px;margin-bottom:16px">';
+  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Avg Bedtime</div>';
+  html += '<div style="font-family:var(--F);font-size:24px;color:var(--cream)">' + formatMinutesSince6pm(avg) + '</div></div>';
+  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Variance</div>';
+  html += '<div style="font-family:var(--F);font-size:24px;color:var(--cream)">±' + stddevMin + ' min</div></div>';
+  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Status</div>';
+  html += '<div style="font-family:var(--F);font-size:24px;color:' + statusColor + ';text-transform:capitalize">' + status + '</div></div>';
+  html += '</div>';
+
+  html += '<div style="border-top:1px solid var(--gold-border);padding-top:12px">';
+  sessionData.slice(0, 7).forEach(function(s) {
+    var bm = minutesSince6pm(s.startTime);
+    var dev = Math.round(bm - avg);
+    var devSign = dev > 0 ? '+' : '';
+    var devColor = Math.abs(dev) <= 30 ? 'var(--up)' : Math.abs(dev) <= 60 ? 'var(--warn)' : 'var(--down)';
+    var dt = new Date(s.date + 'T12:00:00');
+    var dateLabel = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    var bedtime = new Date(s.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px">';
+    html += '<span style="color:var(--cream-dim);flex:1">' + dateLabel + '</span>';
+    html += '<span style="color:var(--cream);font-family:var(--F);flex:1;text-align:center">' + bedtime + '</span>';
+    html += '<span style="color:' + devColor + ';flex:1;text-align:right">' + devSign + dev + ' min</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function renderSleepInsights() {
+  var card = document.getElementById('sleep-insights-card');
+  var list = document.getElementById('sleep-insights-list');
+  if (!card || !list) return;
+
+  var all = window._lastInsights || [];
+  // Match mobile's filter: sleep-domain rules plus cross-domain rules whose
+  // text mentions sleep/bedtime.
+  var sleepRelated = all.filter(function(ins) {
+    if (!ins) return false;
+    if (ins.domain === 'sleep') return true;
+    var text = ((ins.headline || '') + ' ' + (ins.body || '')).toLowerCase();
+    return /sleep|bedtime|rem|deep stage/.test(text);
+  });
+
+  if (sleepRelated.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+
+  var html = sleepRelated.slice(0, 6).map(function(ins) {
+    var sev = ins.severity || ins._severity || 'neutral';
+    var sevColor = sev === 'alert' ? 'var(--down)' : sev === 'attention' ? 'var(--warn)' : sev === 'positive' ? 'var(--up)' : 'var(--cream)';
+    return '<div style="padding:12px 0;border-bottom:1px solid var(--gold-border)">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+      + '<span style="width:6px;height:6px;border-radius:50%;background:' + sevColor + ';display:inline-block"></span>'
+      + '<span style="font-family:var(--F);font-size:16px;color:var(--cream)">' + escapeHtml(ins.headline || '') + '</span>'
+      + '</div>'
+      + '<div style="font-size:13px;color:var(--cream-dim);line-height:1.5">' + escapeHtml(ins.body || '') + '</div>'
+      + '</div>';
+  }).join('');
+
+  list.innerHTML = html;
+  card.style.display = '';
+}
+
 function renderSleepStageChart(sessionData) {
   var container = document.getElementById('sleep-stage-chart');
   if (!container) return;
+
+  // <2 nights of data isn't meaningful as a chart (matches mobile 922c762).
+  if (sessionData.length < 2) {
+    container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Need at least 2 nights of data to show the stage chart.</div>';
+    return;
+  }
 
   // Show most recent N sessions (reverse to chronological order)
   var maxBars = Math.min(sessionData.length, sleepPageRange);
@@ -1674,15 +1814,16 @@ function renderSleepStageChart(sessionData) {
     var awakeH = (d.stages.awake / maxMinutes * 120);
     var dt = new Date(d.date + 'T12:00:00');
     var dayLabel = (dt.getMonth() + 1) + '/' + dt.getDate();
-    var dayOfWeek = dt.toLocaleDateString('en-US', { weekday: 'narrow' });
+    var dayOfWeek = dt.toLocaleDateString('en-US', { weekday: 'short' });
 
     html += '<div class="sleep-stage-bar">';
     html += '<div class="sleep-stage-hours">' + d.totalHours + 'h</div>';
+    // Stack order matches industry convention: awake on top, deep at bottom.
     html += '<div class="sleep-stage-stack">';
-    html += '<div class="sleep-stage-seg" style="height:' + deepH + 'px;background:var(--sleep-deep)"></div>';
+    html += '<div class="sleep-stage-seg" style="height:' + awakeH + 'px;background:rgba(245,240,232,0.15)"></div>';
     html += '<div class="sleep-stage-seg" style="height:' + remH + 'px;background:var(--sleep-rem)"></div>';
     html += '<div class="sleep-stage-seg" style="height:' + coreH + 'px;background:var(--sleep-core)"></div>';
-    html += '<div class="sleep-stage-seg" style="height:' + awakeH + 'px;background:rgba(245,240,232,0.15)"></div>';
+    html += '<div class="sleep-stage-seg" style="height:' + deepH + 'px;background:var(--sleep-deep)"></div>';
     html += '</div>';
     html += '<div class="sleep-stage-date">' + dayOfWeek + '<br>' + dayLabel + '</div>';
     html += '</div>';
