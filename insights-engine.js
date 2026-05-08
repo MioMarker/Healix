@@ -636,16 +636,14 @@
       };
     },
     template: function (data) {
-      var body = 'You\'ve accumulated about ' + data.debt.toFixed(1) + ' hours of sleep debt. That level of deficit can affect cognitive performance, mood, and recovery.';
+      var body = 'You\'ve accumulated about ' + data.debt.toFixed(1) + ' hours of sleep debt against the AASM-recommended 7+ hours/night for adults.';
       if (data.goalIsSleep) {
-        body += ' Since sleep is one of your goals, closing this gap should be a top priority.';
-      } else if (data.goalIsFeel) {
-        body += ' Sleep debt is one of the biggest drivers of how you feel day-to-day.';
+        body += ' Since sleep is one of your goals, this gap is worth tracking closely.';
       }
       return {
         headline: 'Sleep debt is high',
         body: body,
-        action: 'Aim for an extra 30-60 minutes of sleep each night this week.'
+        action: 'Track your bedtime to see where the deficit is coming from.'
       };
     }
   };
@@ -709,7 +707,7 @@
     template: function (data) {
       return {
         headline: 'Sleep efficiency below 85%',
-        body: 'Your sleep efficiency is ' + data.efficiency + '% \u2014 meaning ' + (100 - data.efficiency) + '% of your time in bed is spent awake. Clinical sleep medicine considers 85%+ as healthy. The most effective fix: CBT-I techniques (stimulus control, sleep restriction) outperform medication long-term.',
+        body: 'Your sleep efficiency is ' + data.efficiency + '% \u2014 meaning ' + (100 - data.efficiency) + '% of your time in bed is spent awake. Clinical sleep medicine generally considers 85%+ as the typical healthy range. Research supports cognitive behavioral therapy for insomnia (CBT-I) as a first-line approach for chronic insomnia.',
         action: 'How can I improve my sleep efficiency?'
       };
     }
@@ -746,7 +744,7 @@
     template: function (data) {
       return {
         headline: 'REM sleep is below target',
-        body: 'REM is ' + data.remPct + '% of your sleep (target: 20-25%). Low REM independently predicts cognitive decline and dementia risk. Alcohol is the #1 suppressor \u2014 even 1-2 drinks cuts REM by 20-30%. REM concentrates in the final 2 hours of sleep, so short nights disproportionately kill REM.',
+        body: 'REM is ' + data.remPct + '% of your sleep (target: 20-25%). Research links lower REM sleep duration to higher dementia incidence. REM tends to concentrate in the final hours of sleep, so short nights disproportionately reduce it.',
         action: 'What affects my REM sleep and why does it matter?'
       };
     }
@@ -783,7 +781,7 @@
     template: function (data) {
       return {
         headline: 'REM sleep is on target',
-        body: data.remPct + '% REM sleep supports emotional regulation, memory consolidation, and creative problem-solving. Research links healthy REM to lower dementia risk. Keep it up.',
+        body: data.remPct + '% REM sleep is in the typical healthy range. Research links higher REM sleep duration to lower dementia incidence in adults.',
         action: 'How does REM sleep affect my brain health?'
       };
     }
@@ -822,8 +820,8 @@
     template: function (data) {
       return {
         headline: 'Sleep as a foundation',
-        body: 'You\'re averaging ' + data.avg.toFixed(1) + ' hours of sleep. For general wellness, 7-9 hours is the target. Sleep under 6.5 hours has outsized effects on mood, energy, appetite regulation, and immune function.',
-        action: 'This is often the single highest-leverage change for how you feel. Prioritize an earlier bedtime.'
+        body: 'You\'re averaging ' + data.avg.toFixed(1) + ' hours of sleep. AASM recommends 7+ hours per night for adults.',
+        action: 'Track your bedtime to see what\'s driving the shorter nights.'
       };
     }
   };
@@ -896,11 +894,11 @@
       return {
         headline: 'Resting HR trending ' + data.direction,
         body: improving
-          ? 'Your resting heart rate is trending downward, which typically signals improved cardiovascular fitness or recovery.'
-          : 'Your resting heart rate is trending upward. This can reflect stress, poor sleep, dehydration, or overtraining.',
+          ? 'Your resting heart rate is trending downward over recent weeks.'
+          : 'Your resting heart rate is trending upward over recent weeks. Stress, sleep, hydration, and training load are common factors that affect resting HR.',
         action: improving
-          ? 'Maintain your current routine.'
-          : 'Prioritize rest and check hydration.'
+          ? 'Note what changed in your routine.'
+          : 'Note any recent changes in sleep, stress, or training.'
       };
     }
   };
@@ -938,13 +936,13 @@
       if (data.type === 'tachycardia') {
         return {
           headline: 'Resting heart rate is very high',
-          body: 'Your resting HR of ' + data.hr + ' bpm is at or above 100, which may indicate tachycardia. This could reflect stress, dehydration, medication effects, or an underlying condition.',
+          body: 'Your resting HR of ' + data.hr + ' bpm is at or above 100, which is above the AHA\'s normal adult resting range (60–100 bpm).',
           action: 'Consider speaking with a healthcare provider if this persists.'
         };
       }
       return {
         headline: 'Resting heart rate is unusually low',
-        body: 'Your resting HR of ' + data.hr + ' bpm is at or below 40, which may indicate bradycardia. Without a high aerobic fitness level to explain it, this warrants attention.',
+        body: 'Your resting HR of ' + data.hr + ' bpm is at or below 40, which is below the AHA\'s normal adult resting range (60–100 bpm). Endurance athletes commonly fall below this range; otherwise this may warrant a clinical conversation.',
         action: 'Consider speaking with a healthcare provider.'
       };
     }
@@ -983,8 +981,8 @@
     template: function (data) {
       return {
         headline: 'Elevated resting heart rate',
-        body: 'Your resting HR of ' + data.hr + ' bpm is higher than ideal for general wellness, and your activity level (' + data.steps.toLocaleString() + ' steps) is moderate. Small increases in daily movement can help lower resting HR over time.',
-        action: 'Try adding a short walk or light cardio session this week.'
+        body: 'Your resting HR of ' + data.hr + ' bpm is on the higher end of the AHA\'s normal adult resting range (60–100 bpm), and your activity level is averaging ' + data.steps.toLocaleString() + ' steps/day.',
+        action: 'Note any recent changes in sleep, stress, or activity.'
       };
     }
   };
@@ -1021,8 +1019,8 @@
     template: function (data) {
       return {
         headline: 'Protein intake is falling short',
-        body: 'You hit at least 80% of your ' + Math.round(data.targetG) + 'g protein target on only ' + data.hitDays + ' of the last ' + data.daysChecked + ' days. Consistent protein intake supports muscle repair and recovery.',
-        action: 'Add a high-protein snack or increase portion sizes at each meal.'
+        body: 'You hit at least 80% of your ' + Math.round(data.targetG) + 'g protein target on only ' + data.hitDays + ' of the last ' + data.daysChecked + ' days. Research links adequate protein intake to muscle protein synthesis and recovery in active adults.',
+        action: 'Track protein across meals to see where the gap is.'
       };
     }
   };
@@ -1055,8 +1053,8 @@
     template: function (data) {
       return {
         headline: 'Protein intake is on track',
-        body: 'You hit your ' + Math.round(data.targetG) + 'g protein target on ' + data.hitDays + ' of the last ' + data.daysChecked + ' days. Consistency like this supports muscle growth and recovery.',
-        action: 'Keep it up \u2014 this is one of the most impactful habits for your goal.'
+        body: 'You hit your ' + Math.round(data.targetG) + 'g protein target on ' + data.hitDays + ' of the last ' + data.daysChecked + ' days. Research links consistent protein intake to muscle protein synthesis and recovery in active adults.',
+        action: 'Keep tracking to maintain visibility on your intake.'
       };
     }
   };
@@ -1088,8 +1086,8 @@
     template: function (data) {
       return {
         headline: 'Calorie intake exceeding target',
-        body: 'You exceeded your estimated ' + data.targetCal + ' kcal maintenance target by more than 10% on ' + data.surplusDays + ' of the last 7 days. A sustained surplus can slow weight management progress.',
-        action: 'Review portion sizes and high-calorie items in recent meals.'
+        body: 'You exceeded your estimated ' + data.targetCal + ' kcal maintenance target by more than 10% on ' + data.surplusDays + ' of the last 7 days.',
+        action: 'Review your recent meals to see where the surplus came from.'
       };
     }
   };
@@ -1126,8 +1124,8 @@
     template: function (data) {
       return {
         headline: 'Protein is concentrated in one meal',
-        body: 'About ' + data.maxPct + '% of today\'s protein came from your ' + data.mealType + '. Spreading protein across meals supports better muscle protein synthesis throughout the day.',
-        action: 'Try adding 20-30g of protein to your other meals.'
+        body: 'About ' + data.maxPct + '% of today\'s protein came from your ' + data.mealType + '. Research suggests muscle protein synthesis is supported by distributing protein across meals.',
+        action: 'Note where else in your day you could include protein.'
       };
     }
   };
@@ -1149,8 +1147,8 @@
     template: function (data) {
       return {
         headline: 'Sodium-to-potassium ratio is elevated',
-        body: 'Your average daily sodium (' + data.sodium + 'mg) is high and potassium (' + data.potassium + 'mg) is low, giving a ratio of ' + data.ratio + '. A high ratio is associated with increased blood pressure risk.',
-        action: 'Add potassium-rich foods like bananas, sweet potatoes, or spinach.'
+        body: 'Your average daily sodium (' + data.sodium + 'mg) is high and potassium (' + data.potassium + 'mg) is low, giving a ratio of ' + data.ratio + '. Research links high dietary sodium-to-potassium ratios to elevated blood pressure.',
+        action: 'Bananas, sweet potatoes, and leafy greens are common potassium sources.'
       };
     }
   };
@@ -1169,8 +1167,8 @@
     template: function (data) {
       return {
         headline: 'Calcium intake is low',
-        body: 'Your average daily calcium is about ' + data.dailyCa + 'mg, below the 800mg threshold for bone health. Adequate calcium supports bone density and reduces fracture risk.',
-        action: 'Consider dairy products, fortified plant milks, or leafy greens.'
+        body: 'Your average daily calcium is about ' + data.dailyCa + 'mg, below NIH\'s recommended 1,000mg daily intake for most adults. Calcium plays a role in maintaining bone density.',
+        action: 'Dairy products, fortified plant milks, and leafy greens are common calcium sources.'
       };
     }
   };
@@ -1189,8 +1187,8 @@
     template: function (data) {
       return {
         headline: 'Vitamin B12 intake may be low',
-        body: 'Your average daily B12 from meals is about ' + data.dailyB12 + 'mcg, below the 2.0mcg threshold. B12 is essential for energy, nerve function, and red blood cell production.',
-        action: 'Include more animal products, fortified cereals, or consider a B12 supplement.'
+        body: 'Your average daily B12 from meals is about ' + data.dailyB12 + 'mcg, below the NIH-recommended 2.4mcg daily intake for adults. B12 plays a role in red blood cell formation and nerve function.',
+        action: 'Animal products and fortified cereals are common B12 sources; discuss supplementation with a healthcare provider.'
       };
     }
   };
@@ -1210,8 +1208,8 @@
     template: function (data) {
       return {
         headline: 'Low iron and vitamin C together',
-        body: 'Your daily iron (~' + data.dailyIron + 'mg) and vitamin C (~' + data.dailyVitC + 'mg) are both below recommended levels. Vitamin C enhances non-heme iron absorption, so low levels of both compound the issue.',
-        action: 'Pair iron-rich foods (beans, spinach, red meat) with vitamin C sources (citrus, peppers).'
+        body: 'Your daily iron (~' + data.dailyIron + 'mg) and vitamin C (~' + data.dailyVitC + 'mg) are both below NIH recommended intakes. Per NIH, vitamin C enhances non-heme iron absorption.',
+        action: 'Pairing iron-rich foods (beans, spinach, red meat) with vitamin C sources (citrus, peppers) is one common approach.'
       };
     }
   };
@@ -1231,8 +1229,8 @@
     template: function (data) {
       return {
         headline: 'Calcium may be blocking iron absorption',
-        body: 'Your iron intake (~' + data.dailyIron + 'mg/day) is below target while calcium is adequate (~' + data.dailyCa + 'mg/day). High calcium intake can inhibit non-heme iron absorption when consumed together.',
-        action: 'Try separating calcium-rich and iron-rich foods into different meals.'
+        body: 'Your iron intake (~' + data.dailyIron + 'mg/day) is below NIH recommended intake while calcium is adequate (~' + data.dailyCa + 'mg/day). Per NIH, calcium can interfere with non-heme iron absorption when consumed in the same meal.',
+        action: 'Separating calcium-rich and iron-rich foods into different meals is one common approach.'
       };
     }
   };
@@ -1284,8 +1282,8 @@
       var list = data.lowNutrients.join(', ');
       return {
         headline: 'Multiple energy nutrients are low',
-        body: 'Your intake of ' + list + ' is below recommended levels. These nutrients are critical for energy production, and deficiencies in multiple areas can compound fatigue and low mood.',
-        action: 'Focus on nutrient-dense whole foods or discuss supplementation with a provider.'
+        body: 'Your intake of ' + list + ' is below NIH recommended daily levels. These nutrients play roles in energy metabolism.',
+        action: 'Discuss with a healthcare provider whether supplementation is appropriate for you.'
       };
     }
   };
@@ -1313,8 +1311,8 @@
       var list = data.lowNutrients.join(', ');
       return {
         headline: 'Nutrition gaps detected',
-        body: data.lowCount + ' key micronutrients (' + list + ') are below 60% of the recommended daily amount. Broad micronutrient gaps can affect energy, immunity, and overall wellbeing.',
-        action: 'Increase variety in your meals \u2014 aim for colorful fruits, vegetables, and whole grains.'
+        body: data.lowCount + ' key micronutrients (' + list + ') are below 60% of the NIH recommended daily amount based on your logged meals.',
+        action: 'Variety in fruits, vegetables, and whole grains is one common way to broaden micronutrient intake.'
       };
     }
   };
@@ -1370,7 +1368,7 @@
       var plural = data.prs.length > 1 ? 'PRs' : 'PR';
       return {
         headline: 'New personal ' + plural + ' set',
-        body: 'You hit new personal records: ' + prList + '. Progressive overload is the foundation of strength gains.',
+        body: 'You hit new personal records: ' + prList + '.',
         action: 'Log your next session to keep tracking progress.'
       };
     }
@@ -1514,8 +1512,8 @@
       var weaker = data.direction === 'push-dominant' ? 'pulling' : 'pushing';
       return {
         headline: 'Push-pull imbalance detected',
-        body: 'Your push percentile (' + data.pushAvg + 'th) and pull percentile (' + data.pullAvg + 'th) differ by ' + data.gap + ' points. You\'re ' + data.direction + ', which can lead to posture issues and injury risk over time.',
-        action: 'Prioritize ' + weaker + ' exercises to close the gap.'
+        body: 'Your push percentile (' + data.pushAvg + 'th) and pull percentile (' + data.pullAvg + 'th) differ by ' + data.gap + ' points. You\'re ' + data.direction + '.',
+        action: 'Adding ' + weaker + ' exercises is one way to close the gap.'
       };
     }
   };
@@ -1712,7 +1710,7 @@
     template: function (data) {
       return {
         headline: 'Poor sleep linked to elevated blood pressure',
-        body: 'Your blood pressure is ' + data.sys + '/' + data.dia + ' mmHg and you\'re averaging ' + data.sleep + 'h of sleep. Research shows sleeping under 6 hours raises blood pressure by 5\u201310 mmHg through sustained sympathetic nervous system activation.',
+        body: 'Your blood pressure is ' + data.sys + '/' + data.dia + ' mmHg and you\'re averaging ' + data.sleep + 'h of sleep. Research links short sleep duration (<6 hours) to elevated blood pressure.',
         action: 'How does sleep affect blood pressure?'
       };
     }
@@ -1759,7 +1757,7 @@
     template: function (data) {
       return {
         headline: 'Elevated blood pressure and heart rate together',
-        body: 'Your blood pressure of ' + data.sys + '/' + data.dia + ' mmHg and resting HR of ' + data.hr + ' bpm are both elevated. This combination significantly increases cardiovascular risk. The two most effective interventions: regular aerobic exercise and consistent sleep.',
+        body: 'Your blood pressure of ' + data.sys + '/' + data.dia + ' mmHg and resting HR of ' + data.hr + ' bpm are both elevated relative to AHA reference ranges.',
         action: 'Why are both my blood pressure and heart rate elevated?'
       };
     }
@@ -1799,7 +1797,7 @@
     template: function (data) {
       return {
         headline: 'VO2 max is below average',
-        body: 'Your VO2 max of ' + data.vo2 + ' ml/kg/min is below the typical range for your age. VO2 max is the single strongest predictor of all-cause mortality. The most effective intervention: 2\u20133 sessions of zone 2 cardio (conversational pace) per week for 30+ minutes.',
+        body: 'Your VO2 max of ' + data.vo2 + ' ml/kg/min is below the typical range for your age. Research links higher cardiorespiratory fitness to lower all-cause mortality.',
         action: 'How can I improve my VO2 max?'
       };
     }
@@ -1859,7 +1857,7 @@
       var plural = data.flagged.length > 1 ? 'markers are' : 'marker is';
       return {
         headline: 'Bloodwork ' + plural + ' outside optimal range',
-        body: 'The following ' + plural + ' outside the optimal range: ' + details + '. Consider discussing these results with your healthcare provider.',
+        body: 'The following ' + plural + ' outside the optimal range: ' + details + '. Optimal ranges shown are based on AHA cholesterol guidelines and ADA glucose standards. Discuss these results with your healthcare provider.',
         action: 'Discuss these results with your healthcare provider.',
         _severity: data.flagged.length >= 3 ? 'alert' : 'attention'
       };
@@ -1898,7 +1896,7 @@
       var markerText = markers.join(' and ');
       return {
         headline: 'Blood sugar levels require medical attention',
-        body: 'Your ' + markerText + ' ' + (markers.length > 1 ? 'are' : 'is') + ' in the diabetic range. These values warrant prompt medical evaluation and should not be ignored.',
+        body: 'Your ' + markerText + ' ' + (markers.length > 1 ? 'are' : 'is') + ' at or above the ADA diabetes diagnostic thresholds (fasting glucose ≥126 mg/dL or HbA1c ≥6.5%). These values warrant prompt medical evaluation.',
         action: 'Schedule an appointment with your healthcare provider as soon as possible.'
       };
     }
@@ -2122,11 +2120,9 @@
       return {
         headline: 'Weight score ' + verb,
         body: data.improved
-          ? 'Your weight score moved from ' + data.previousTier + ' to ' + data.currentTier + '. This reflects progress toward a healthier body composition.'
-          : 'Your weight score shifted from ' + data.previousTier + ' to ' + data.currentTier + '. Weight fluctuations are normal, but sustained shifts are worth monitoring.',
-        action: data.improved
-          ? 'Stay consistent with current nutrition and activity habits.'
-          : 'Review recent nutrition and activity patterns for changes.'
+          ? 'Your weight score moved from ' + data.previousTier + ' to ' + data.currentTier + '.'
+          : 'Your weight score shifted from ' + data.previousTier + ' to ' + data.currentTier + '. Day-to-day weight fluctuations are common.',
+        action: 'Note what changed in your recent routine.'
       };
     }
   };
@@ -2175,7 +2171,7 @@
       if (data.goodSleep && data.goodVo2) {
         return {
           headline: 'Aerobic fitness supporting deep sleep',
-          body: 'Your VO2 max of ' + data.vo2 + ' ml/kg/min and ' + data.deepPct + '% deep sleep are consistent with research showing higher aerobic fitness is one of the strongest predictors of deep sleep quality.',
+          body: 'Your VO2 max of ' + data.vo2 + ' ml/kg/min and ' + data.deepPct + '% deep sleep are both in the typical healthy range.',
           action: 'How does VO2 max affect my sleep quality?',
           _severity: 'positive'
         };
@@ -2183,15 +2179,15 @@
       if (data.goodSleep && !data.goodVo2) {
         return {
           headline: 'Deep sleep is good \u2014 VO2 max could help it further',
-          body: 'Your deep sleep is ' + data.deepPct + '% (healthy range) but your VO2 max of ' + data.vo2 + ' ml/kg/min is below average for your age. Improving aerobic fitness is one of the most effective ways to increase deep sleep duration.',
-          action: 'Add 2-3 cardio sessions per week to boost VO2 max.',
+          body: 'Your deep sleep is ' + data.deepPct + '% (typical healthy range) but your VO2 max of ' + data.vo2 + ' ml/kg/min is below average for your age.',
+          action: 'How does VO2 max affect my sleep quality?',
           chatQuestion: 'How can I improve my VO2 max to get better sleep?',
           _severity: 'attention'
         };
       }
       return {
         headline: 'Deep sleep below target',
-        body: 'Your deep sleep is ' + data.deepPct + '% (target: 15-20%). Research shows aerobic fitness is the strongest behavioral predictor of deep sleep. Your VO2 max of ' + data.vo2 + ' \u2014 improving it through cardio could directly boost deep sleep.',
+        body: 'Your deep sleep is ' + data.deepPct + '% (target: 15-20%) and your VO2 max is ' + data.vo2 + '.',
         action: 'How can I increase my deep sleep percentage?',
         _severity: 'attention'
       };
@@ -2212,7 +2208,7 @@
     template: function (data) {
       return {
         headline: 'Short sleep is elevating your heart rate',
-        body: 'You\'re averaging ' + data.sleep + 'h of sleep and your resting HR is ' + data.hr + ' bpm. Research shows sleeping under 6 hours raises resting HR by 4-8 bpm through sympathetic nervous system activation. Improving sleep to 7+ hours could directly lower your resting HR.',
+        body: 'You\'re averaging ' + data.sleep + 'h of sleep (below AASM-recommended 7+ hours) and your resting HR is ' + data.hr + ' bpm.',
         action: 'How does sleep affect my resting heart rate?'
       };
     }
@@ -2234,14 +2230,14 @@
       if (data.low) {
         return {
           headline: 'Low activity may be hurting sleep quality',
-          body: 'You logged ' + data.steps.toLocaleString() + ' steps today and your sleep efficiency is ' + data.efficiency + '%. Research shows people hitting 7,000+ steps sleep significantly more efficiently. More daytime movement could improve how well you sleep.',
+          body: 'You logged ' + data.steps.toLocaleString() + ' steps today and your sleep efficiency is ' + data.efficiency + '%.',
           action: 'How does physical activity affect my sleep?',
           _severity: 'attention'
         };
       }
       return {
         headline: 'Activity level supporting sleep quality',
-        body: 'Your ' + data.steps.toLocaleString() + ' daily steps and ' + data.efficiency + '% sleep efficiency are consistent with research linking 7,000+ steps to better sleep quality.',
+        body: 'Your ' + data.steps.toLocaleString() + ' daily steps and ' + data.efficiency + '% sleep efficiency are both in healthy ranges.',
         action: 'What else can I do to optimize my sleep?',
         _severity: 'positive'
       };
@@ -2353,14 +2349,14 @@
       if (data.inconsistent) {
         return {
           headline: 'VO2 max and resting HR are misaligned',
-          body: 'Your VO2 max of ' + data.vo2 + ' ml/kg/min and resting HR of ' + data.rhr + ' bpm don\'t match typical patterns. Research shows each 1-point VO2 increase lowers resting HR by ~0.5 bpm. A mismatch may indicate stress, dehydration, or overtraining.',
+          body: 'Your VO2 max of ' + data.vo2 + ' ml/kg/min and resting HR of ' + data.rhr + ' bpm don\'t match typical patterns. Stress, dehydration, and training load are common factors that can affect this alignment.',
           action: 'Why is my resting heart rate higher than expected for my fitness level?',
           _severity: 'attention'
         };
       }
       return {
         headline: 'Fitness and heart rate well aligned',
-        body: 'Your VO2 max of ' + data.vo2 + ' ml/kg/min and resting HR of ' + data.rhr + ' bpm are consistent. Research shows each 1-point VO2 increase lowers resting HR by ~0.5 bpm \u2014 your cardiovascular system is adapting to your fitness level.',
+        body: 'Your VO2 max of ' + data.vo2 + ' ml/kg/min and resting HR of ' + data.rhr + ' bpm are in ranges typical of good cardiovascular conditioning.',
         action: 'How can I continue improving my cardiovascular fitness?',
         _severity: 'positive'
       };
@@ -2390,7 +2386,7 @@
       if (data.hba1c != null) markers.push('HbA1c of ' + data.hba1c + '%');
       return {
         headline: 'Short sleep may be affecting blood sugar',
-        body: 'You\'re averaging ' + data.sleep + 'h of sleep with ' + markers.join(' and ') + '. Research shows sleeping under 6 hours reduces insulin sensitivity by up to 30%. Improving sleep to 7+ hours could be as impactful as dietary changes for glucose management.',
+        body: 'You\'re averaging ' + data.sleep + 'h of sleep (below AASM-recommended 7+ hours) with ' + markers.join(' and ') + '. Research links short sleep duration to reduced insulin sensitivity.',
         action: 'How does sleep affect my blood sugar levels?'
       };
     }
@@ -2443,14 +2439,14 @@
       if (data.lowHdl) {
         return {
           headline: 'Low HDL \u2014 aerobic fitness can help',
-          body: 'Your HDL is ' + data.hdl + ' mg/dL (below the 40 mg/dL threshold) with a VO2 max of ' + data.vo2 + '. Research shows each 1-point VO2 increase raises HDL by ~0.4 mg/dL. Aerobic exercise is the most effective non-pharmaceutical HDL intervention.',
+          body: 'Your HDL is ' + data.hdl + ' mg/dL (below the 40 mg/dL AHA threshold) with a VO2 max of ' + data.vo2 + '. Research links higher aerobic fitness to higher HDL levels.',
           action: 'How can I raise my HDL cholesterol?',
           _severity: 'attention'
         };
       }
       return {
         headline: 'Aerobic fitness supporting HDL levels',
-        body: 'Your VO2 max of ' + data.vo2 + ' and HDL of ' + data.hdl + ' mg/dL are consistent with research showing aerobic fitness is the strongest behavioral predictor of HDL. Each 1-point VO2 increase corresponds to ~0.4 mg/dL higher HDL.',
+        body: 'Your VO2 max of ' + data.vo2 + ' and HDL of ' + data.hdl + ' mg/dL are both in healthy ranges.',
         action: 'What else affects my HDL cholesterol?',
         _severity: 'positive'
       };
@@ -2500,7 +2496,7 @@
     template: function (data) {
       return {
         headline: 'Elevated BMI contributing to higher heart rate',
-        body: 'Your BMI of ' + data.bmi + ' and resting HR of ' + data.rhr + ' bpm are connected. Research shows each 1-point BMI increase raises resting HR by ~1.3 bpm. A 5-point BMI reduction typically corresponds to a 6-7 bpm drop in resting heart rate.',
+        body: 'Your BMI of ' + data.bmi + ' and resting HR of ' + data.rhr + ' bpm are both above the typical healthy range.',
         action: 'How does my weight affect my heart health?'
       };
     }
@@ -2537,14 +2533,14 @@
       if (data.good) {
         return {
           headline: 'Protein intake supporting sleep quality',
-          body: 'Your ' + data.perKg + ' g/kg daily protein and ' + data.deepPct + '% deep sleep align with research showing higher protein intake (>1.2 g/kg) improves deep sleep through tryptophan pathways.',
+          body: 'Your ' + data.perKg + ' g/kg daily protein and ' + data.deepPct + '% deep sleep are both in typical healthy ranges.',
           action: 'How does protein affect my sleep quality?',
           _severity: 'positive'
         };
       }
       return {
         headline: 'Low protein may be affecting deep sleep',
-        body: 'Your protein intake of ' + data.perKg + ' g/kg and ' + data.deepPct + '% deep sleep (target: 15-20%) are both below ideal. Research shows protein above 1.2 g/kg/day supports better sleep quality through tryptophan \u2014 a serotonin/melatonin precursor.',
+        body: 'Your protein intake of ' + data.perKg + ' g/kg and ' + data.deepPct + '% deep sleep (target: 15-20%) are both below typical ranges.',
         action: 'Can increasing protein improve my sleep?',
         _severity: 'attention'
       };
@@ -2602,7 +2598,7 @@
       if (data.highActivity) reasons.push('activity load is high');
       return {
         headline: 'Recovery may need attention',
-        body: 'Several recovery signals are flagged: ' + reasons.join(', ') + '. Your body may benefit from extra recovery time \u2014 consider lighter activity or an extra rest day over the next few days.',
+        body: 'Multiple recovery-related metrics are outside your typical baseline: ' + reasons.join(', ') + '.',
         action: 'What are the signs I need more recovery time?'
       };
     }
@@ -2645,7 +2641,7 @@
     template: function (data) {
       return {
         headline: 'Sleep may be limiting your strength gains',
-        body: 'You\'re averaging ' + data.sleep + 'h of sleep and your lifts have stalled. Research shows sleeping under 6 hours reduces maximal strength by 5-10% \u2014 and testosterone, which drives strength adaptation, is produced primarily during deep sleep. Prioritizing 7+ hours could break the plateau without changing your training.',
+        body: 'You\'re averaging ' + data.sleep + 'h of sleep (below AASM-recommended 7+ hours) and your lifts have stalled.',
         action: 'How does sleep affect my strength and muscle growth?'
       };
     }
@@ -2687,7 +2683,7 @@
       if (data.allGood) {
         return {
           headline: 'All three recovery pillars in check',
-          body: 'Sleep efficiency, resting heart rate, and protein intake are all in good shape. Research from the International Olympic Committee identifies these as the three pillars of recovery \u2014 you\'re covering all of them.',
+          body: 'Your sleep efficiency, resting heart rate, and protein intake are all in typical healthy ranges today.',
           action: 'How can I maximize my training when recovery is dialed in?',
           _severity: 'positive'
         };
@@ -2698,8 +2694,8 @@
       if (!data.protOk) weak.push('protein intake');
       return {
         headline: 'Recovery: 2 of 3 pillars in check',
-        body: 'Your ' + weak.join(' and ') + ' could use attention. IOC research shows recovery is only as strong as its weakest pillar \u2014 focus on ' + weak[0] + ' this week.',
-        action: 'What are the three pillars of recovery?',
+        body: 'Your ' + weak.join(' and ') + ' is outside the typical healthy range today.',
+        action: 'What factors affect recovery?',
         _severity: 'neutral'
       };
     }
@@ -2772,7 +2768,7 @@
     template: function (data) {
       return {
         headline: 'Low omega-3 with elevated triglycerides',
-        body: 'Your triglycerides are ' + data.trig + ' mg/dL and you\'re averaging only ' + data.omega3 + 'g omega-3/day. EPA and DHA from fish oil reduce triglycerides by 15-30% at therapeutic doses (2-4g/day). Even 2-3 servings of fatty fish per week can meaningfully lower triglycerides.',
+        body: 'Your triglycerides are ' + data.trig + ' mg/dL (above the 150 optimal threshold) and you\'re averaging only ' + data.omega3 + 'g omega-3/day. Research links EPA and DHA intake to reductions in triglyceride levels.',
         action: 'How do omega-3s affect my triglycerides?'
       };
     }
@@ -3028,7 +3024,7 @@
     template: function (data) {
       return {
         headline: 'Afternoon caffeine may be hurting sleep',
-        body: 'You logged caffeine in the afternoon/evening on ' + data.days + ' day' + (data.days > 1 ? 's' : '') + ' this week. Caffeine has a 6-hour half-life \u2014 a 2 PM coffee is still 50% active at 8 PM. Try cutting caffeine by noon for two weeks and track the effect on your sleep efficiency.',
+        body: 'You logged caffeine in the afternoon/evening on ' + data.days + ' day' + (data.days > 1 ? 's' : '') + ' this week. Caffeine has an approximately 6-hour half-life. Consider tracking caffeine-free nights to compare your sleep data.',
         action: 'How does caffeine timing affect my sleep?'
       };
     }
@@ -3049,7 +3045,7 @@
     template: function (data) {
       return {
         headline: 'Low activity may be affecting sleep',
-        body: 'Averaging ' + data.steps + ' steps/day with ' + data.efficiency + '% sleep efficiency. Research consistently shows moderate daily activity (7,000+ steps) improves sleep quality. For your sleep goal, a daily walk is the single most accessible intervention \u2014 and it costs nothing.',
+        body: 'Averaging ' + data.steps + ' steps/day with ' + data.efficiency + '% sleep efficiency. Both are below typical healthy ranges.',
         action: 'How does exercise affect sleep quality?'
       };
     }
@@ -3089,7 +3085,7 @@
       details += ' may be directly impacted.';
       return {
         headline: 'Alcohol may be fragmenting sleep',
-        body: 'You logged alcohol on ' + data.days + ' day' + (data.days > 1 ? 's' : '') + ' this week. Even moderate alcohol (1-2 drinks) suppresses REM sleep by 20-30% and fragments sleep architecture.' + details + ' Consider tracking alcohol-free nights vs nights with drinks to see the difference in your own data.',
+        body: 'You logged alcohol on ' + data.days + ' day' + (data.days > 1 ? 's' : '') + ' this week. Research links alcohol consumption to fragmented sleep architecture.' + details + ' Consider tracking alcohol-free nights vs nights with drinks to see the difference in your own data.',
         action: 'How does alcohol affect my sleep stages?'
       };
     }
@@ -3121,14 +3117,14 @@
       if (data.cardioWeak) {
         return {
           headline: 'Strong but aerobically underdeveloped',
-          body: 'Your strength is at the ' + data.strScore + 'th percentile but VO2 max is only ' + data.vo2Score + 'th \u2014 a ' + data.gap + '-point gap. VO2 max is the single strongest predictor of all-cause mortality. Adding 2-3 cardio sessions per week would dramatically improve your longevity profile without sacrificing strength.',
+          body: 'Your strength is at the ' + data.strScore + 'th percentile but VO2 max is only ' + data.vo2Score + 'th \u2014 a ' + data.gap + '-point gap. Research links higher VO2 max to lower all-cause mortality.',
           action: 'How can I improve cardio without losing strength?',
           _severity: 'attention'
         };
       }
       return {
         headline: 'Good cardio but strength lagging',
-        body: 'Your VO2 max is at the ' + data.vo2Score + 'th percentile but strength is only ' + data.strScore + 'th \u2014 a ' + data.gap + '-point gap. Muscle mass and strength independently predict longevity. Adding 2-3 resistance training sessions per week would balance your fitness profile.',
+        body: 'Your VO2 max is at the ' + data.vo2Score + 'th percentile but strength is only ' + data.strScore + 'th \u2014 a ' + data.gap + '-point gap. Research links grip strength to cardiovascular mortality risk.',
         action: 'How can I build strength without losing cardio fitness?',
         _severity: 'attention'
       };
@@ -3162,7 +3158,7 @@
     template: function (data) {
       return {
         headline: 'Inflammation elevated with lifestyle factors',
-        body: 'CRP of ' + data.crp + ' mg/L indicates low-grade inflammation, paired with ' + data.flags.join(' and ') + '. Chronic inflammation drives fatigue, brain fog, and poor recovery. Each lifestyle factor independently reduces CRP by 20-30% \u2014 fix the biggest gap first.',
+        body: 'Your CRP of ' + data.crp + ' mg/L is above the AHA-referenced low-risk threshold of 1 mg/L, alongside ' + data.flags.join(' and ') + '.',
         action: 'How can I reduce my CRP and inflammation?'
       };
     }
@@ -3208,7 +3204,7 @@
       if (data.hba1c != null) markers.push('HbA1c of ' + data.hba1c + '%');
       return {
         headline: 'Family diabetes history + borderline blood sugar',
-        body: 'You have family history of diabetes (' + data.members + ') and your ' + markers.join(' and ') + ' is approaching the pre-diabetic threshold. With genetic predisposition, maintaining healthy glucose is more important than for the general population. Focus on sleep (>7h), daily walking, and limiting refined carbs.',
+        body: 'You have family history of diabetes (' + data.members + ') and your ' + markers.join(' and ') + ' is approaching the ADA pre-diabetic threshold. Discuss your risk profile with your healthcare provider.',
         action: 'What should I do about borderline blood sugar with family history of diabetes?'
       };
     }
@@ -3259,7 +3255,7 @@
     template: function (data) {
       return {
         headline: 'Elevated LDL with family cholesterol history',
-        body: 'Your LDL of ' + data.ldl + ' mg/dL is above optimal, and your family (' + data.members + ') has a history of high cholesterol. Familial hypercholesterolemia affects ~1 in 250 people \u2014 if your LDL stays elevated despite diet and exercise, discuss genetic screening with your doctor.',
+        body: 'Your LDL of ' + data.ldl + ' mg/dL is above the AHA optimal threshold of 100 mg/dL, and your family (' + data.members + ') has a history of high cholesterol. Discuss your risk profile with your healthcare provider.',
         action: 'Should I be concerned about familial high cholesterol?'
       };
     }
@@ -3281,8 +3277,8 @@
     template: function (data) {
       return {
         headline: 'Sleep deprivation may be driving cortisol up',
-        body: 'Your cortisol is ' + data.cortisol + ' ug/dL (above 18) and you\'re averaging ' + data.sleepAvg + 'h of sleep. Sleep deprivation is one of the strongest drivers of elevated cortisol \u2014 even one night under 6 hours can raise levels by 37-45%.',
-        action: 'Prioritize 7+ hours of sleep to lower cortisol naturally.',
+        body: 'Your cortisol is ' + data.cortisol + ' ug/dL (above the commonly-cited 18 threshold) and you\'re averaging ' + data.sleepAvg + 'h of sleep (below AASM-recommended 7+ hours).',
+        action: 'How does sleep affect my cortisol levels?',
         chatQuestion: 'How does sleep affect my cortisol levels?'
       };
     }
@@ -3304,8 +3300,8 @@
     template: function (data) {
       return {
         headline: 'High training load may be elevating cortisol',
-        body: 'Your cortisol is ' + data.cortisol + ' ug/dL with ' + data.steps.toLocaleString() + ' daily steps and a resting HR of ' + data.hr + ' bpm. High training volume without adequate recovery drives chronically elevated cortisol, which impairs muscle repair and immune function.',
-        action: 'Consider adding a rest day or reducing training intensity.',
+        body: 'Your cortisol is ' + data.cortisol + ' ug/dL with ' + data.steps.toLocaleString() + ' daily steps and a resting HR of ' + data.hr + ' bpm.',
+        action: 'Am I overtraining?',
         chatQuestion: 'Am I overtraining? How does exercise affect cortisol?'
       };
     }
@@ -3334,8 +3330,8 @@
     template: function (data) {
       return {
         headline: 'Caffeine habit may be amplifying cortisol',
-        body: 'Your cortisol is ' + data.cortisol + ' ug/dL and you consumed caffeine on ' + data.caffeineDays + ' of the last 7 days. Caffeine stimulates cortisol release \u2014 regular consumption keeps levels chronically elevated, especially when combined with stress or poor sleep.',
-        action: 'Try limiting caffeine to mornings only or switching to half-caf.',
+        body: 'Your cortisol is ' + data.cortisol + ' ug/dL and you consumed caffeine on ' + data.caffeineDays + ' of the last 7 days.',
+        action: 'How does caffeine affect cortisol?',
         chatQuestion: 'How does caffeine affect my cortisol and stress levels?'
       };
     }
@@ -3358,8 +3354,8 @@
     template: function (data) {
       return {
         headline: 'Short sleep linked to low testosterone',
-        body: 'Your testosterone is ' + data.testosterone + ' ng/dL and you\'re averaging ' + data.sleepAvg + 'h of sleep. Research shows sleeping 5 hours instead of 8 reduces testosterone by 10-15%. Most testosterone is produced during deep sleep.',
-        action: 'Aim for 7-8 hours of sleep to support testosterone production.',
+        body: 'Your testosterone is ' + data.testosterone + ' ng/dL (below the reference threshold) and you\'re averaging ' + data.sleepAvg + 'h of sleep (below AASM-recommended 7+ hours).',
+        action: 'How does sleep affect testosterone?',
         chatQuestion: 'How does sleep affect my testosterone levels?'
       };
     }
@@ -3385,8 +3381,8 @@
     template: function (data) {
       return {
         headline: 'Elevated BMI may be suppressing testosterone',
-        body: 'Your testosterone is ' + data.testosterone + ' ng/dL with a BMI of ' + data.bmi + '. Excess body fat increases aromatase activity, converting testosterone to estrogen. Even a 5-10% reduction in body weight can meaningfully raise testosterone levels.',
-        action: 'Focus on gradual fat loss through diet and resistance training.',
+        body: 'Your testosterone is ' + data.testosterone + ' ng/dL (below the reference threshold) with a BMI of ' + data.bmi + '.',
+        action: 'How does body weight affect testosterone?',
         chatQuestion: 'How does body weight affect my testosterone?'
       };
     }
@@ -3411,8 +3407,8 @@
     template: function (data) {
       return {
         headline: 'Low zinc intake may be limiting testosterone',
-        body: 'Your testosterone is ' + data.testosterone + ' ng/dL and your zinc intake averages ' + data.dailyZinc + 'mg/day (below the 8mg minimum). Zinc is essential for testosterone synthesis \u2014 deficiency can reduce levels by up to 50%.',
-        action: 'Add zinc-rich foods: red meat, oysters, pumpkin seeds, or a supplement.',
+        body: 'Your testosterone is ' + data.testosterone + ' ng/dL (below the reference threshold) and your zinc intake averages ' + data.dailyZinc + 'mg/day (below the 8mg RDA minimum). Research links zinc deficiency to reduced testosterone.',
+        action: 'How does zinc affect testosterone?',
         chatQuestion: 'How does zinc affect my testosterone levels?'
       };
     }
@@ -3435,8 +3431,8 @@
     template: function (data) {
       return {
         headline: 'Low activity linked to low testosterone',
-        body: 'Your testosterone is ' + data.testosterone + ' ng/dL and you\'re only averaging ' + data.steps.toLocaleString() + ' steps/day. Both resistance training and cardiovascular exercise stimulate testosterone production \u2014 sedentary behavior suppresses it.',
-        action: 'Add resistance training 3x/week and aim for 7,000+ daily steps.',
+        body: 'Your testosterone is ' + data.testosterone + ' ng/dL (below the reference threshold) and you\'re averaging ' + data.steps.toLocaleString() + ' steps/day.',
+        action: 'How does exercise affect testosterone?',
         chatQuestion: 'What type of exercise best supports testosterone?'
       };
     }
@@ -3455,9 +3451,9 @@
     },
     template: function (data) {
       return {
-        headline: 'High activity may be depleting iron stores',
-        body: 'Your ferritin is ' + data.ferritin + ' ng/mL (low) and you\'re averaging ' + data.steps.toLocaleString() + ' steps/day. Endurance exercise increases iron loss through sweat, GI tract, and red blood cell breakdown (foot-strike hemolysis). Athletes need 30-70% more iron than sedentary individuals.',
-        action: 'Pair iron-rich foods with vitamin C and avoid calcium/coffee around iron-rich meals.',
+        headline: 'High activity alongside low ferritin',
+        body: 'Your ferritin is ' + data.ferritin + ' ng/mL (below typical ranges) and you\'re averaging ' + data.steps.toLocaleString() + ' steps/day. Per NIH, endurance exercise is associated with higher iron requirements.',
+        action: 'How does exercise affect iron?',
         chatQuestion: 'How does exercise affect my iron levels?'
       };
     }
@@ -3476,9 +3472,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Low iron may be disrupting your sleep',
-        body: 'Your ferritin is ' + data.ferritin + ' ng/mL and you\'re averaging ' + data.sleepAvg + 'h of sleep. Iron deficiency is a leading cause of restless leg syndrome and poor sleep quality \u2014 it disrupts dopamine regulation in the brain, which controls sleep-wake cycles.',
-        action: 'Discuss iron supplementation with your doctor if sleep remains poor.',
+        headline: 'Low ferritin alongside short sleep',
+        body: 'Your ferritin is ' + data.ferritin + ' ng/mL (below typical ranges) and you\'re averaging ' + data.sleepAvg + 'h of sleep.',
+        action: 'How does iron affect sleep?',
         chatQuestion: 'How does iron deficiency affect sleep quality?'
       };
     }
@@ -3497,9 +3493,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Low vitamin D linked to poor sleep',
-        body: 'Your vitamin D is ' + data.vitaminD + ' ng/mL (below 30) and you\'re averaging ' + data.sleepAvg + 'h of sleep. Vitamin D receptors in the brainstem regulate sleep \u2014 deficiency is associated with shorter sleep duration, worse quality, and daytime fatigue.',
-        action: 'Consider 2,000-4,000 IU vitamin D3 daily, taken with a fatty meal.',
+        headline: 'Low vitamin D alongside short sleep',
+        body: 'Your vitamin D is ' + data.vitaminD + ' ng/mL (below the commonly-cited 30 sufficient threshold) and you\'re averaging ' + data.sleepAvg + 'h of sleep.',
+        action: 'How does vitamin D affect sleep?',
         chatQuestion: 'How does vitamin D affect my sleep?'
       };
     }
@@ -3518,9 +3514,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Low vitamin D may be limiting strength gains',
-        body: 'Your vitamin D is ' + data.vitaminD + ' ng/mL and your strength is at the ' + data.strengthPct + 'th percentile. Vitamin D is critical for muscle protein synthesis and neuromuscular function \u2014 deficiency reduces force production and increases injury risk.',
-        action: 'Supplement vitamin D and retest in 8-12 weeks.',
+        headline: 'Low vitamin D alongside lower strength',
+        body: 'Your vitamin D is ' + data.vitaminD + ' ng/mL (below the commonly-cited 30 sufficient threshold) and your strength is at the ' + data.strengthPct + 'th percentile.',
+        action: 'How does vitamin D affect strength?',
         chatQuestion: 'How does vitamin D affect muscle strength?'
       };
     }
@@ -3546,9 +3542,9 @@
     },
     template: function (data) {
       return {
-        headline: 'High protein intake with elevated creatinine',
-        body: 'Your creatinine is ' + data.creatinine + ' mg/dL and you\'re consuming ~' + data.dailyProtein + 'g protein/day. Very high protein diets increase creatinine as a byproduct of muscle metabolism. This may be benign in athletes, but persistently elevated levels warrant a kidney function check (GFR test).',
-        action: 'Stay well-hydrated and discuss with your doctor if levels stay elevated.',
+        headline: 'High protein intake alongside elevated creatinine',
+        body: 'Your creatinine is ' + data.creatinine + ' mg/dL and you\'re consuming ~' + data.dailyProtein + 'g protein/day. Protein metabolism is one factor that can affect creatinine.',
+        action: 'Discuss persistently elevated creatinine with your doctor.',
         chatQuestion: 'Is my high protein diet affecting my kidney function?'
       };
     }
@@ -3567,9 +3563,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Intense exercise may explain elevated creatinine',
-        body: 'Your creatinine is ' + data.creatinine + ' mg/dL with ' + data.steps.toLocaleString() + ' daily steps. Heavy exercise temporarily raises creatinine due to increased muscle breakdown. This is usually benign \u2014 but blood work drawn within 24-48h of intense training may show falsely elevated levels.',
-        action: 'If retesting, avoid intense exercise for 48 hours before the blood draw.',
+        headline: 'High activity alongside elevated creatinine',
+        body: 'Your creatinine is ' + data.creatinine + ' mg/dL with ' + data.steps.toLocaleString() + ' daily steps. Intense exercise is one factor that can temporarily raise creatinine.',
+        action: 'Does exercise affect creatinine?',
         chatQuestion: 'Does exercise affect my creatinine levels?'
       };
     }
@@ -3588,9 +3584,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Accumulated sleep debt raising blood sugar',
-        body: 'Your glucose is ' + data.glucose + ' mg/dL and you\'ve accumulated ' + data.debt + ' hours of sleep debt. Cumulative sleep debt impairs insulin sensitivity more than a single bad night \u2014 just 4 days of restricted sleep can reduce glucose tolerance by 40%.',
-        action: 'Prioritize consistent 7-8h nights to repay sleep debt gradually.',
+        headline: 'Sleep debt alongside elevated blood sugar',
+        body: 'Your glucose is ' + data.glucose + ' mg/dL (above ADA optimal) and you\'ve accumulated ' + data.debt + ' hours of sleep debt against the AASM-recommended 7+ hours.',
+        action: 'How does sleep debt affect blood sugar?',
         chatQuestion: 'How does sleep debt affect my blood sugar?'
       };
     }
@@ -3618,9 +3614,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Alcohol intake linked to elevated blood sugar',
-        body: 'Your glucose is ' + data.glucose + ' mg/dL and you consumed alcohol on ' + data.alcoholDays + ' of the past 7 days. Alcohol disrupts liver glucose regulation \u2014 it can cause both spikes (from sugary drinks) and impaired fasting glucose the next morning.',
-        action: 'Try reducing alcohol to 1-2 days per week and choosing lower-sugar options.',
+        headline: 'Alcohol intake alongside elevated blood sugar',
+        body: 'Your glucose is ' + data.glucose + ' mg/dL (above ADA optimal) and you consumed alcohol on ' + data.alcoholDays + ' of the past 7 days.',
+        action: 'How does alcohol affect blood sugar?',
         chatQuestion: 'How does alcohol affect my blood sugar?'
       };
     }
@@ -3639,9 +3635,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Sleep debt fueling inflammation',
-        body: 'Your CRP is ' + data.crp + ' mg/L and you\'ve accumulated ' + data.debt + ' hours of sleep debt. Chronic sleep restriction activates NF-kB inflammatory pathways \u2014 CRP rises proportionally to cumulative sleep loss.',
-        action: 'Consistent 7-8h sleep is the most effective anti-inflammatory intervention.',
+        headline: 'Sleep debt alongside elevated inflammation',
+        body: 'Your CRP is ' + data.crp + ' mg/L (above AHA low-risk threshold) and you\'ve accumulated ' + data.debt + ' hours of sleep debt against AASM-recommended 7+ hours.',
+        action: 'How does sleep affect inflammation?',
         chatQuestion: 'How does sleep debt affect inflammation?'
       };
     }
@@ -3669,9 +3665,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Frequent alcohol intake driving inflammation',
-        body: 'Your CRP is ' + data.crp + ' mg/L and you consumed alcohol on ' + data.alcoholDays + ' of the past 7 days. Alcohol increases intestinal permeability, allowing endotoxins into the bloodstream that trigger systemic inflammation.',
-        action: 'Reducing alcohol frequency is one of the fastest ways to lower CRP.',
+        headline: 'Frequent alcohol intake alongside elevated inflammation',
+        body: 'Your CRP is ' + data.crp + ' mg/L (above AHA low-risk threshold) and you consumed alcohol on ' + data.alcoholDays + ' of the past 7 days.',
+        action: 'How does alcohol affect inflammation?',
         chatQuestion: 'How does alcohol affect my inflammation levels?'
       };
     }
@@ -3690,9 +3686,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Short sleep linked to elevated LDL',
-        body: 'Your LDL is ' + data.ldl + ' mg/dL and you\'re averaging ' + data.sleepAvg + 'h of sleep. Sleep deprivation disrupts cholesterol metabolism \u2014 studies show sleeping under 6 hours increases LDL by 10-20% compared to 7-8 hours.',
-        action: 'Improving sleep duration may help lower LDL alongside dietary changes.',
+        headline: 'Short sleep alongside elevated LDL',
+        body: 'Your LDL is ' + data.ldl + ' mg/dL (above AHA optimal threshold) and you\'re averaging ' + data.sleepAvg + 'h of sleep (below AASM-recommended 7+ hours).',
+        action: 'How does sleep affect cholesterol?',
         chatQuestion: 'How does sleep affect my cholesterol levels?'
       };
     }
@@ -3720,9 +3716,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Alcohol intake raising triglycerides',
-        body: 'Your triglycerides are ' + data.trigs + ' mg/dL and you consumed alcohol on ' + data.alcoholDays + ' of the past 7 days. Alcohol directly stimulates hepatic triglyceride synthesis \u2014 even moderate drinking can raise levels 5-10% per drink.',
-        action: 'Cutting alcohol is one of the most effective ways to lower triglycerides.',
+        headline: 'Alcohol intake alongside elevated triglycerides',
+        body: 'Your triglycerides are ' + data.trigs + ' mg/dL (above the 150 optimal threshold) and you consumed alcohol on ' + data.alcoholDays + ' of the past 7 days.',
+        action: 'How does alcohol affect triglycerides?',
         chatQuestion: 'How does alcohol affect my triglyceride levels?'
       };
     }
@@ -3750,9 +3746,9 @@
     },
     template: function (data) {
       return {
-        headline: 'Late eating linked to elevated triglycerides',
-        body: 'Your triglycerides are ' + data.trigs + ' mg/dL and you ate after 9pm on ' + data.lateMealDays + ' of the past 7 days. Eating late disrupts lipid metabolism \u2014 the body is less efficient at clearing triglycerides at night, leading to higher fasting levels.',
-        action: 'Try finishing your last meal by 8pm.',
+        headline: 'Late eating alongside elevated triglycerides',
+        body: 'Your triglycerides are ' + data.trigs + ' mg/dL (above the 150 optimal threshold) and you ate after 9pm on ' + data.lateMealDays + ' of the past 7 days.',
+        action: 'How does meal timing affect triglycerides?',
         chatQuestion: 'How does meal timing affect my triglycerides?'
       };
     }
