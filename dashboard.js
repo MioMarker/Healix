@@ -1101,7 +1101,7 @@ function renderVitalityTimeline() {
   svg += '<text x="' + (padX - 6) + '" y="' + (H - padY + 3) + '" class="va-tl-label" text-anchor="end">' + Math.round(minAge) + '</text>';
 
   // Latest value label
-  svg += '<text x="' + (last.x + 8) + '" y="' + (last.y + 4) + '" style="font-family:var(--F);font-size:13px;fill:var(--gold-light);font-weight:300">' + last.vAge + '</text>';
+  svg += '<text x="' + (last.x + 8) + '" y="' + (last.y + 4) + '" style="font-family:var(--B);font-size:13px;fill:var(--gold-light);font-weight:300">' + last.vAge + '</text>';
 
   svg += '</svg>';
   chartEl.innerHTML = svg;
@@ -1724,11 +1724,11 @@ function renderBedtimeConsistency(sessionData) {
   var html = '';
   html += '<div style="display:flex;gap:24px;margin-bottom:16px">';
   html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Avg Bedtime</div>';
-  html += '<div style="font-family:var(--F);font-size:24px;color:var(--cream)">' + formatMinutesSince6pm(avg) + '</div></div>';
+  html += '<div style="font-family:var(--B);font-size:24px;color:var(--cream)">' + formatMinutesSince6pm(avg) + '</div></div>';
   html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Variance</div>';
-  html += '<div style="font-family:var(--F);font-size:24px;color:var(--cream)">±' + stddevMin + ' min</div></div>';
+  html += '<div style="font-family:var(--B);font-size:24px;color:var(--cream)">±' + stddevMin + ' min</div></div>';
   html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Status</div>';
-  html += '<div style="font-family:var(--F);font-size:24px;color:' + statusColor + ';text-transform:capitalize">' + status + '</div></div>';
+  html += '<div style="font-family:var(--B);font-size:24px;color:' + statusColor + ';text-transform:capitalize">' + status + '</div></div>';
   html += '</div>';
 
   html += '<div style="border-top:1px solid var(--gold-border);padding-top:12px">';
@@ -1743,7 +1743,7 @@ function renderBedtimeConsistency(sessionData) {
 
     html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px">';
     html += '<span style="color:var(--cream-dim);flex:1">' + dateLabel + '</span>';
-    html += '<span style="color:var(--cream);font-family:var(--F);flex:1;text-align:center">' + bedtime + '</span>';
+    html += '<span style="color:var(--cream);font-family:var(--B);flex:1;text-align:center">' + bedtime + '</span>';
     html += '<span style="color:' + devColor + ';flex:1;text-align:right">' + devSign + dev + ' min</span>';
     html += '</div>';
   });
@@ -1778,7 +1778,7 @@ function renderSleepInsights() {
     return '<div style="padding:12px 0;border-bottom:1px solid var(--gold-border)">'
       + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
       + '<span style="width:6px;height:6px;border-radius:50%;background:' + sevColor + ';display:inline-block"></span>'
-      + '<span style="font-family:var(--F);font-size:16px;color:var(--cream)">' + escapeHtml(ins.headline || '') + '</span>'
+      + '<span style="font-family:var(--B);font-size:16px;color:var(--cream)">' + escapeHtml(ins.headline || '') + '</span>'
       + '</div>'
       + '<div style="font-size:13px;color:var(--cream-dim);line-height:1.5">' + escapeHtml(ins.body || '') + '</div>'
       + '</div>';
@@ -1835,9 +1835,9 @@ function renderSleepStageChart(sessionData) {
   var avgRem = Math.round(data.reduce(function(s, d) { return s + d.stages.rem; }, 0) / data.length);
   var avgCore = Math.round(data.reduce(function(s, d) { return s + d.stages.core; }, 0) / data.length);
   html += '<div style="display:flex;gap:20px;margin-top:16px;padding-top:12px;border-top:1px solid var(--gold-border)">';
-  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--sleep-deep);margin-bottom:4px">Avg Deep</div><div style="font-family:var(--F);font-size:20px;color:var(--cream)">' + Math.floor(avgDeep / 60) + 'h ' + (avgDeep % 60) + 'm</div></div>';
-  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--sleep-rem);margin-bottom:4px">Avg REM</div><div style="font-family:var(--F);font-size:20px;color:var(--cream)">' + Math.floor(avgRem / 60) + 'h ' + (avgRem % 60) + 'm</div></div>';
-  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--sleep-core);margin-bottom:4px">Avg Core</div><div style="font-family:var(--F);font-size:20px;color:var(--cream)">' + Math.floor(avgCore / 60) + 'h ' + (avgCore % 60) + 'm</div></div>';
+  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--sleep-deep);margin-bottom:4px">Avg Deep</div><div style="font-family:var(--B);font-size:20px;color:var(--cream)">' + Math.floor(avgDeep / 60) + 'h ' + (avgDeep % 60) + 'm</div></div>';
+  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--sleep-rem);margin-bottom:4px">Avg REM</div><div style="font-family:var(--B);font-size:20px;color:var(--cream)">' + Math.floor(avgRem / 60) + 'h ' + (avgRem % 60) + 'm</div></div>';
+  html += '<div style="flex:1"><div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--sleep-core);margin-bottom:4px">Avg Core</div><div style="font-family:var(--B);font-size:20px;color:var(--cream)">' + Math.floor(avgCore / 60) + 'h ' + (avgCore % 60) + 'm</div></div>';
   html += '</div>';
 
   container.innerHTML = html;
@@ -2806,7 +2806,7 @@ function renderMacroSplit(prot, carbs, fat, targets) {
     return '<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--gold-border);font-size:13px">'
       + '<span style="width:8px;height:8px;border-radius:50%;background:' + color + ';flex-shrink:0"></span>'
       + '<span style="flex:1;color:var(--cream)">' + label + '</span>'
-      + '<span style="color:var(--cream);font-family:var(--F);min-width:60px;text-align:right">' + actualG + 'g</span>'
+      + '<span style="color:var(--cream);font-family:var(--B);min-width:60px;text-align:right">' + actualG + 'g</span>'
       + '<span style="color:' + deviationColor(actualPct, targetPct) + ';min-width:80px;text-align:right">' + actualPct + '% <span style="color:var(--muted);font-size:11px">/ ' + targetPct + '% target</span></span>'
       + '</div>';
   };
@@ -3553,7 +3553,7 @@ function renderMealsAggregateView(meals, nutrients, range) {
         return '<tr style="border-bottom:1px solid rgba(184,151,90,.06);cursor:pointer" onclick="drillToDay(\'' + d + '\')" onmouseover="this.style.background=\'var(--gold-faint)\'" onmouseout="this.style.background=\'\'">'
 
           + '<td style="padding:11px 0;font-size:13px;color:' + (isToday ? 'var(--gold)' : 'var(--cream)') + '">' + dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) + '</td>'
-          + '<td style="padding:11px 0;font-family:var(--F);font-size:18px;font-weight:300;color:' + (overGoal ? 'var(--down)' : 'var(--cream)') + '">' + (calsByDay[ri] || '—') + '</td>'
+          + '<td style="padding:11px 0;font-family:var(--B);font-size:18px;font-weight:300;color:' + (overGoal ? 'var(--down)' : 'var(--cream)') + '">' + (calsByDay[ri] || '—') + '</td>'
           + '<td style="padding:11px 0;font-size:13px;color:var(--cream-dim)">' + (protByDay[ri] || '—') + 'g</td>'
           + '<td style="padding:11px 0;font-size:13px;color:var(--cream-dim)">' + (carbsByDay[ri] || '—') + 'g</td>'
           + '<td style="padding:11px 0;font-size:13px;color:var(--cream-dim)">' + (fatsByDay[ri] || '—') + 'g</td>'
@@ -6713,7 +6713,7 @@ async function renderStrengthPage() {
           }
           html += '<div class="fitness-rec-card" onclick="openLogTestModal(\'' + recKey + '\')" style="min-width:140px;flex:0 0 auto;padding:14px 16px;background:var(--dark-3);border:1px solid var(--gold-border);cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor=\'var(--gold)\'" onmouseout="this.style.borderColor=\'\'">'
             + '<div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">' + escapeHtml(norm.label) + '</div>'
-            + '<div style="font-family:var(--F);font-size:24px;font-weight:300">' + valText + '</div>'
+            + '<div style="font-family:var(--B);font-size:24px;font-weight:300">' + valText + '</div>'
             + '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + subText + '</div>'
             + '<div style="margin-top:8px;font-size:10px;color:var(--gold);cursor:pointer">+ Log</div>'
             + '</div>';
@@ -6811,7 +6811,7 @@ async function renderStrengthPage() {
           + '<div>'
           + '<div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">' + norm.label + '</div>'
           + '<div style="display:flex;align-items:baseline;gap:6px">'
-          + '<div style="font-family:var(--F);font-size:36px;font-weight:300;line-height:1">' + valueDisplay + '</div>'
+          + '<div style="font-family:var(--B);font-size:36px;font-weight:300;line-height:1">' + valueDisplay + '</div>'
           + (latest ? '<div style="font-size:12px;color:var(--muted)">' + norm.unit + '</div>' : '')
           + '</div>'
           + (percentileDisplay ? '<div class="pct-badge ' + pctClass + '" style="margin-top:6px">' + percentileDisplay + '</div>' : '')
@@ -7670,7 +7670,7 @@ function renderSharePeople(shares) {
 
     html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--dark-3);border:1px solid var(--gold-border)">';
     html += '<div style="display:flex;align-items:center;gap:10px">';
-    html += '<div style="width:28px;height:28px;border:1px solid var(--gold-border);display:grid;place-items:center;font-size:11px;color:var(--gold);font-family:var(--F)">' + escapeHtml(name.charAt(0).toUpperCase()) + '</div>';
+    html += '<div style="width:28px;height:28px;border:1px solid var(--gold-border);display:grid;place-items:center;font-size:11px;color:var(--gold);font-family:var(--B)">' + escapeHtml(name.charAt(0).toUpperCase()) + '</div>';
     html += '<div>';
     html += '<div style="font-size:13px;color:var(--cream)">' + escapeHtml(name) + '</div>';
     if (sub) html += '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + escapeHtml(sub) + '</div>';

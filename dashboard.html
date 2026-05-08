@@ -7,7 +7,7 @@
 <title>Healix — Dashboard</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#B8975A">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="dashboard.css?v=20260330a">
 <link rel="stylesheet" href="chat-widget.css">
@@ -163,7 +163,7 @@
         </div>
         <div id="va-explainer" style="display:block;margin-top:8px">
           <div class="card" style="padding:20px 24px;font-size:13px;color:var(--cream);line-height:1.7">
-            <div style="font-family:var(--F);font-size:18px;font-weight:300;color:var(--cream);margin-bottom:10px">What is Vitality Age?</div>
+            <div style="font-family:var(--B);font-size:18px;font-weight:300;color:var(--cream);margin-bottom:10px">What is Vitality Age?</div>
             <p style="margin-bottom:12px">Your Vitality Age estimates your biological age based on real health data. A Vitality Age lower than your actual age means your body is performing younger than average for your age group.</p>
             <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">What goes into the score</div>
             <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
@@ -526,19 +526,19 @@
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
           <div class="card" style="text-align:center">
             <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Avg Cal/Day</div>
-            <div id="agg-cal" style="font-family:var(--F);font-size:32px;font-weight:300">—</div>
+            <div id="agg-cal" style="font-family:var(--B);font-size:32px;font-weight:300">—</div>
           </div>
           <div class="card" style="text-align:center">
             <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Avg Protein</div>
-            <div id="agg-protein" style="font-family:var(--F);font-size:32px;font-weight:300">—</div>
+            <div id="agg-protein" style="font-family:var(--B);font-size:32px;font-weight:300">—</div>
           </div>
           <div class="card" style="text-align:center">
             <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Avg Carbs</div>
-            <div id="agg-carbs" style="font-family:var(--F);font-size:32px;font-weight:300">—</div>
+            <div id="agg-carbs" style="font-family:var(--B);font-size:32px;font-weight:300">—</div>
           </div>
           <div class="card" style="text-align:center">
             <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Avg Fat</div>
-            <div id="agg-fat" style="font-family:var(--F);font-size:32px;font-weight:300">—</div>
+            <div id="agg-fat" style="font-family:var(--B);font-size:32px;font-weight:300">—</div>
           </div>
         </div>
 
@@ -583,7 +583,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
         <div>
           <div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Rest & Recovery</div>
-          <div style="font-family:var(--F);font-size:28px;font-weight:300">Your <em style="font-style:italic;color:var(--gold)">Sleep</em></div>
+          <div style="font-family:var(--B);font-size:28px;font-weight:300">Your <em style="font-style:italic;color:var(--gold)">Sleep</em></div>
         </div>
         <div class="tf-group">
           <button class="tf-btn active" onclick="setSleepRange(14, this)">2 Weeks</button>
@@ -596,28 +596,28 @@
       <div class="sleep-scores" id="sleep-scores">
         <div class="card">
           <div class="card-label">Last Night</div>
-          <div class="stat-item-val" id="slp-last" style="font-family:var(--F);font-size:36px;font-weight:300">—</div>
+          <div class="stat-item-val" id="slp-last" style="font-family:var(--B);font-size:36px;font-weight:300">—</div>
           <div class="stat-item-delta delta-neutral" id="slp-last-sub">hours</div>
         </div>
         <div class="card">
           <div class="card-label">Average</div>
-          <div class="stat-item-val" id="slp-avg" style="font-family:var(--F);font-size:36px;font-weight:300">—</div>
+          <div class="stat-item-val" id="slp-avg" style="font-family:var(--B);font-size:36px;font-weight:300">—</div>
           <div class="stat-item-delta delta-neutral" id="slp-avg-sub">hours/night</div>
         </div>
         <div class="card">
           <div class="card-label" onclick="event.stopPropagation();toggleSleepDebtExplainer()" style="cursor:pointer">Sleep Debt <span style="font-size:9px;color:var(--muted)">ⓘ</span></div>
           <div id="sleep-debt-explainer" class="driver-explainer" style="display:none">Cumulative hours below the 8-hour target over the past week. A debt of 3+ hours is linked to impaired focus, higher cortisol, and slower recovery.</div>
-          <div class="stat-item-val" id="slp-debt" style="font-family:var(--F);font-size:36px;font-weight:300">—</div>
+          <div class="stat-item-val" id="slp-debt" style="font-family:var(--B);font-size:36px;font-weight:300">—</div>
           <div class="stat-item-delta delta-neutral" id="slp-debt-sub">hours this week</div>
         </div>
         <div class="card">
           <div class="card-label">Sleep Score</div>
-          <div class="stat-item-val" id="slp-score" style="font-family:var(--F);font-size:36px;font-weight:300">—</div>
+          <div class="stat-item-val" id="slp-score" style="font-family:var(--B);font-size:36px;font-weight:300">—</div>
           <div class="stat-item-delta delta-neutral" id="slp-score-sub">out of 100</div>
         </div>
         <div class="card" id="slp-hrv-card" style="display:none">
           <div class="card-label">HRV</div>
-          <div class="stat-item-val" id="slp-hrv" style="font-family:var(--F);font-size:36px;font-weight:300">—</div>
+          <div class="stat-item-val" id="slp-hrv" style="font-family:var(--B);font-size:36px;font-weight:300">—</div>
           <div class="stat-item-delta delta-neutral" id="slp-hrv-sub">ms SDNN</div>
         </div>
       </div>
@@ -683,7 +683,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
         <div>
           <div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Lab Results</div>
-          <div style="font-family:var(--F);font-size:28px;font-weight:300">Your <em style="font-style:italic;color:var(--gold)">Bloodwork</em></div>
+          <div style="font-family:var(--B);font-size:28px;font-weight:300">Your <em style="font-style:italic;color:var(--gold)">Bloodwork</em></div>
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <select class="modal-input" id="bw-date-select" onchange="onBloodworkDateChange()" aria-label="Select test date" style="width:auto;padding:8px 14px;font-size:12px;cursor:pointer"></select>
@@ -724,7 +724,7 @@
       <div class="docs-header">
         <div>
           <div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Health Records</div>
-          <div style="font-family:var(--F);font-size:28px;font-weight:300">Your <em style="font-style:italic;color:var(--gold)">Documents</em></div>
+          <div style="font-family:var(--B);font-size:28px;font-weight:300">Your <em style="font-style:italic;color:var(--gold)">Documents</em></div>
         </div>
         <button class="upload-btn" onclick="document.getElementById('doc-input-full').click()">
           + Upload Document
@@ -971,7 +971,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
         <div>
           <div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Benchmarks &amp; Percentiles</div>
-          <div style="font-family:var(--F);font-size:28px;font-weight:300">Fitness <em style="font-style:italic;color:var(--gold)">Assessment</em></div>
+          <div style="font-family:var(--B);font-size:28px;font-weight:300">Fitness <em style="font-style:italic;color:var(--gold)">Assessment</em></div>
         </div>
         <button class="upload-btn" onclick="openLogTestModal()">+ Log a Test</button>
       </div>
@@ -1484,7 +1484,7 @@
 <script src="config.js"></script>
 <script src="components/confirm-modal.js"></script>
 <script src="insights-engine.js?v=20260508b"></script>
-<script src="dashboard.js?v=20260508h"></script>
+<script src="dashboard.js?v=20260508i"></script>
 <script src="chat-widget.js"></script>
 
 <datalist id="ex-presets"><option value="Bench Press"><option value="Overhead Press"><option value="Incline Press"><option value="Dumbbell Fly"><option value="Pull-ups"><option value="Chin-ups"><option value="Barbell Row"><option value="Cable Row"><option value="Lat Pulldown"><option value="Dumbbell Curl"><option value="Hammer Curl"><option value="Tricep Dip"><option value="Tricep Pushdown"><option value="Skull Crushers"><option value="Squat"><option value="Front Squat"><option value="Leg Press"><option value="Romanian Deadlift"><option value="Deadlift"><option value="Hip Thrust"><option value="Lunges"><option value="Leg Curl"><option value="Leg Extension"><option value="Plank"><option value="Cable Crunch"><option value="Ab Wheel"><option value="Face Pull"><option value="Running"><option value="Cycling"><option value="Row Machine"><option value="Jump Rope"></datalist>
