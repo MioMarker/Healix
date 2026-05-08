@@ -2640,6 +2640,31 @@ function getMacroTargets() {
   if (goal === 'lose_weight') calTarget = Math.round(tdee * 0.8);
   else if (goal === 'gain_strength') calTarget = Math.round(tdee + 300);
 
+  // Custom targets (mobile commit 8d8e870): if the user has set target_*_pct
+  // and/or target_calories on their profile, those override the goal-based
+  // calculation. Targets are stored as percentages and converted to grams
+  // here using the (optionally overridden) calorie target.
+  var hasCustomMacros = p.target_protein_pct != null
+    && p.target_carbs_pct != null
+    && p.target_fat_pct != null;
+  if (hasCustomMacros || p.target_calories != null) {
+    if (p.target_calories != null) calTarget = Math.round(parseFloat(p.target_calories));
+    if (hasCustomMacros) {
+      var pPct = parseFloat(p.target_protein_pct) / 100;
+      var cPct = parseFloat(p.target_carbs_pct) / 100;
+      var fPct = parseFloat(p.target_fat_pct) / 100;
+      return {
+        cal: calTarget,
+        prot: Math.round(calTarget * pPct / 4),
+        carbs: Math.round(calTarget * cPct / 4),
+        fat: Math.round(calTarget * fPct / 9),
+        isCustom: true
+      };
+    }
+    // Calorie override only; macros still goal-based, recomputed against the
+    // overridden calorie total below.
+  }
+
   // Protein: 1g/lb for weight loss and strength, 0.8g/lb otherwise
   var weightLbs = weightKg * 2.205;
   var protTarget = (goal === 'lose_weight' || goal === 'gain_strength')
@@ -2653,7 +2678,65 @@ function getMacroTargets() {
   var carbTarget = Math.round((calTarget - protTarget * 4 - fatTarget * 9) / 4);
   if (carbTarget < 50) carbTarget = 50;
 
-  return { cal: calTarget, prot: protTarget, fat: fatTarget, carbs: carbTarget };
+  return { cal: calTarget, prot: protTarget, fat: fatTarget, carbs: carbTarget, isCustom: false };
+}
+
+// Render the P/C/F macro split (stacked bar + per-macro rows with grams,
+// percentage, and target deviation). Used on the meals page aggregate view.
+// Mirrors mobile commit ad5be2e.
+function renderMacroSplit(prot, carbs, fat, targets) {
+  var card = document.getElementById('agg-macro-split-card');
+  var bar = document.getElementById('agg-macro-bar');
+  var rows = document.getElementById('agg-macro-rows');
+  var note = document.getElementById('agg-macro-target-note');
+  if (!card || !bar || !rows) return;
+
+  var pCal = (prot || 0) * 4;
+  var cCal = (carbs || 0) * 4;
+  var fCal = (fat || 0) * 9;
+  var totalCal = pCal + cCal + fCal;
+  if (totalCal <= 0) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+
+  var pPct = Math.round(pCal / totalCal * 100);
+  var cPct = Math.round(cCal / totalCal * 100);
+  var fPct = 100 - pPct - cPct;
+
+  // Stacked bar — colors mirror the mobile palette
+  bar.innerHTML = ''
+    + '<div style="width:' + pPct + '%;background:#6fcf8a"></div>'
+    + '<div style="width:' + cPct + '%;background:#B8975A"></div>'
+    + '<div style="width:' + fPct + '%;background:#e0a070"></div>';
+
+  // Compute target percentages for the comparison rows
+  var tCal = (targets.prot || 0) * 4 + (targets.carbs || 0) * 4 + (targets.fat || 0) * 9;
+  var tProtPct = tCal > 0 ? Math.round((targets.prot || 0) * 4 / tCal * 100) : 0;
+  var tCarbPct = tCal > 0 ? Math.round((targets.carbs || 0) * 4 / tCal * 100) : 0;
+  var tFatPct = 100 - tProtPct - tCarbPct;
+
+  // Amber when actual is more than 10 percentage points off the target
+  var deviationColor = function(actual, target) {
+    return Math.abs(actual - target) > 10 ? 'var(--warn)' : 'var(--cream-dim)';
+  };
+
+  var rowHtml = function(label, color, actualPct, actualG, targetPct) {
+    return '<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--gold-border);font-size:13px">'
+      + '<span style="width:8px;height:8px;border-radius:50%;background:' + color + ';flex-shrink:0"></span>'
+      + '<span style="flex:1;color:var(--cream)">' + label + '</span>'
+      + '<span style="color:var(--cream);font-family:var(--F);min-width:60px;text-align:right">' + actualG + 'g</span>'
+      + '<span style="color:' + deviationColor(actualPct, targetPct) + ';min-width:80px;text-align:right">' + actualPct + '% <span style="color:var(--muted);font-size:11px">/ ' + targetPct + '% target</span></span>'
+      + '</div>';
+  };
+
+  rows.innerHTML = ''
+    + rowHtml('Protein', '#6fcf8a', pPct, prot || 0, tProtPct)
+    + rowHtml('Carbs', '#B8975A', cPct, carbs || 0, tCarbPct)
+    + rowHtml('Fat', '#e0a070', fPct, fat || 0, tFatPct);
+
+  note.textContent = targets.isCustom ? '· using your custom targets' : '';
 }
 
 function animateMacroRings(prot, carbs, fat, targets) {
@@ -3304,6 +3387,9 @@ function renderMealsAggregateView(meals, nutrients, range) {
   document.getElementById('agg-protein').innerHTML   = (avgProt || '—') + '<span style="font-size:14px;color:var(--muted)">g</span>';
   document.getElementById('agg-carbs').innerHTML     = (avgCarb || '—') + '<span style="font-size:14px;color:var(--muted)">g</span>';
   document.getElementById('agg-fat').innerHTML       = (avgFat || '—') + '<span style="font-size:14px;color:var(--muted)">g</span>';
+
+  // Macro split breakdown (mobile ad5be2e). Show only when meal data exists.
+  renderMacroSplit(avgProt, avgCarb, avgFat, targets);
 
 
 
