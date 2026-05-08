@@ -1,77 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Healix — Redirecting</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0B0B0B;
-      color: #f8f8f6;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      text-align: center;
-    }
-    .container { max-width: 400px; padding: 24px; }
-    h1 { font-size: 20px; margin-bottom: 8px; }
-    p { font-size: 15px; color: #9ca3af; line-height: 1.5; }
-    .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid #333;
-      border-top-color: #14b8a6;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 24px auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    a {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 12px 24px;
-      background: #14b8a6;
-      color: #fff;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .manual { display: none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'none'; img-src 'self' data:; frame-ancestors 'none';">
+<title>HealthBite — Account confirmed</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0B0B0B">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<style>
+html, body { height: 100%; }
+body {
+  font-family: var(--B); background: var(--dark); color: var(--cream);
+  min-height: 100vh; display: flex; flex-direction: column;
+}
+
+/* BG */
+.bg {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 60%, rgba(184,151,90,.07), transparent 65%),
+    radial-gradient(ellipse 40% 35% at 15% 80%, rgba(184,151,90,.04), transparent 55%),
+    radial-gradient(ellipse 35% 30% at 85% 20%, rgba(184,151,90,.03), transparent 50%);
+}
+.bg-lines {
+  position: fixed; inset: 0; z-index: 0; opacity: .018;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 79px, var(--gold) 80px),
+    repeating-linear-gradient(90deg, transparent, transparent 79px, var(--gold) 80px);
+}
+
+/* NAV */
+nav {
+  position: relative; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 28px 48px; border-bottom: 1px solid var(--gold-border);
+}
+.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.logo-mark {
+  width: 28px; height: 28px;
+  background-image: url('assets/healthbite-icon.png');
+  background-size: cover; background-position: center;
+  border: 1px solid var(--gold-border);
+}
+.logo-text { font-family: var(--F); font-size: 18px; font-weight: 300; letter-spacing: .25em; color: var(--cream); }
+
+/* MAIN */
+main {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 60px 24px; position: relative; z-index: 1;
+}
+.card {
+  max-width: 560px; width: 100%;
+  background: var(--dark-2); border: 1px solid var(--gold-border);
+  padding: 56px 48px; text-align: center;
+  animation: fadeUp .6s ease forwards;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+/* Opening (initial spinner) state */
+#opening { display: block; }
+.spinner {
+  width: 40px; height: 40px; margin: 0 auto 24px;
+  border: 2px solid var(--gold-border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.opening-title { font-family: var(--F); font-size: 28px; font-weight: 300; margin-bottom: 8px; }
+.opening-sub { font-size: 13px; color: var(--cream-dim); }
+
+/* Fallback (post-2s) state */
+#fallback { display: none; }
+
+.confirmed-badge {
+  width: 56px; height: 56px; margin: 0 auto 24px;
+  border: 1px solid var(--gold-border); background: var(--gold-faint);
+  display: grid; place-items: center; color: var(--gold);
+  font-size: 24px;
+}
+.card-eyebrow { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+.card-title { font-family: var(--F); font-size: clamp(28px, 4.6vw, 44px); font-weight: 300; line-height: 1.05; margin-bottom: 14px; }
+.card-title em { font-style: italic; color: var(--gold); }
+.card-body { font-size: 15px; color: var(--cream-dim); line-height: 1.7; margin-bottom: 32px; }
+
+/* Download row */
+.download-row {
+  display: flex; gap: 28px; align-items: center; justify-content: center;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.app-store-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 24px;
+  background: var(--cream); color: var(--dark);
+  border: 1px solid var(--cream);
+  font-family: var(--B); font-size: 14px; font-weight: 500;
+  letter-spacing: .04em; text-decoration: none;
+  transition: opacity .2s;
+}
+.app-store-btn:hover { opacity: .9; }
+.app-store-btn .small { display: block; font-size: 9px; letter-spacing: .15em; text-transform: uppercase; opacity: .6; line-height: 1; margin-bottom: 3px; }
+.app-store-btn .big { display: block; font-size: 16px; font-weight: 500; line-height: 1.1; }
+
+.qr-card {
+  width: 96px; height: 96px;
+  background: var(--cream); padding: 8px;
+  display: grid; place-items: center;
+}
+.qr-card img { width: 100%; height: 100%; display: block; }
+
+.android-note { font-size: 11px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 32px; }
+
+.card-divider { height: 1px; background: var(--gold-border); margin: 32px 0; }
+
+.installed-eyebrow { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+.installed-body { font-size: 14px; color: var(--cream-dim); line-height: 1.7; margin-bottom: 20px; }
+.installed-body strong { color: var(--cream); font-weight: 500; }
+
+.retry-btn {
+  display: none; /* mobile-only — JS toggles to inline-flex */
+  align-items: center; gap: 8px;
+  background: none; border: 1px solid var(--gold);
+  color: var(--gold); padding: 12px 28px;
+  font-family: var(--B); font-size: 12px; letter-spacing: .12em;
+  text-transform: uppercase; text-decoration: none;
+  transition: background .2s, color .2s;
+}
+.retry-btn:hover { background: var(--gold-faint); }
+
+@media (max-width: 600px) {
+  nav { padding: 20px 24px; }
+  .card { padding: 40px 24px; }
+  .download-row { gap: 20px; }
+}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Opening Healix...</h1>
-    <div class="spinner"></div>
-    <p>You should be redirected to the app automatically.</p>
 
-    <div class="manual" id="manual">
-      <p>If the app didn't open, your email has been verified. Go back to Healix and log in.</p>
-      <a href="healix://auth-callback">Open Healix</a>
+<div class="bg"></div>
+<div class="bg-lines"></div>
+
+<nav>
+  <span class="logo">
+    <div class="logo-mark" data-test="healthbite-logo" aria-label="HealthBite logo"></div>
+    <span class="logo-text">HEALTHBITE</span>
+  </span>
+</nav>
+
+<main>
+  <div class="card">
+
+    <!-- Initial state: try the deep link, show a spinner. -->
+    <div id="opening" data-test="opening">
+      <div class="spinner"></div>
+      <h1 class="opening-title">Opening HealthBite…</h1>
+      <p class="opening-sub">Hang on while we hand you off to the app.</p>
     </div>
+
+    <!-- Fallback state: shown after 2s if the deep link didn't take over the page. -->
+    <div id="fallback" data-test="fallback">
+      <div class="confirmed-badge">✓</div>
+      <div class="card-eyebrow">All set</div>
+      <h1 class="card-title">Your email is<br><em>confirmed</em></h1>
+      <p class="card-body">HealthBite is a mobile app — finish setup on your phone.</p>
+
+      <div class="download-row">
+        <a class="app-store-btn"
+           data-test="app-store-link"
+           href="https://apps.apple.com/app/healthbite/id6738970819">
+          <span>
+            <span class="small">Download on the</span>
+            <span class="big">App Store</span>
+          </span>
+        </a>
+        <div class="qr-card" data-test="qr-code">
+          <img src="assets/qr-app-store.svg" alt="QR code to HealthBite on the App Store" width="80" height="80">
+        </div>
+      </div>
+      <div class="android-note" data-test="android-note">Android — coming soon</div>
+
+      <div class="card-divider"></div>
+
+      <div class="installed-eyebrow">Already have HealthBite?</div>
+      <p class="installed-body">
+        Open the app and sign in with your <strong>email and password</strong>.
+      </p>
+      <a class="retry-btn" id="retry-btn" data-test="retry-button" href="#">
+        Open HealthBite
+      </a>
+    </div>
+
   </div>
+</main>
 
-  <script>
-    (function () {
-      // Supabase puts tokens in the URL fragment (#access_token=...&type=signup).
-      // Forward the full fragment to the app's deep link so the Supabase client
-      // can exchange them for a session.
-      var fragment = window.location.hash || '';
-      var query = window.location.search || '';
+<script>
+// Defer all behaviour to the 'load' event. Triggering a custom-scheme
+// navigation (`healix://...`) during initial parsing disturbs the document's
+// load lifecycle in some browsers (and most headless test runners), so we
+// wait until everything has settled before firing.
+window.addEventListener('load', function () {
+  // Pass any URL query/fragment through to the deep link unchanged so the app
+  // can exchange the PKCE code (or pick up an implicit access_token).
+  var fragment = window.location.hash || '';
+  var query = window.location.search || '';
+  var deepLink = 'healix://auth-callback' + query + fragment;
 
-      // Build the deep link. Append both query and fragment in case either carries data.
-      var deepLink = 'healix://auth-callback' + query + fragment;
+  // Q7 (ADR 001): always auto-fire, always wait 2s. No UA-conditioned timing.
+  window.location.href = deepLink;
 
-      // Try to open the app
-      window.location.href = deepLink;
+  // Q5c (ADR 001): the retry button is mobile-only — useful when an in-app
+  // browser (Gmail, Slack) blocked the auto-fire above but a user gesture
+  // can punch through.
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-      // If we're still here after 2s, the app didn't open — show manual instructions
-      setTimeout(function () {
-        document.getElementById('manual').style.display = 'block';
-      }, 2000);
-    })();
-  </script>
+  setTimeout(function () {
+    document.getElementById('opening').style.display = 'none';
+    document.getElementById('fallback').style.display = 'block';
+    if (isMobile) {
+      var retryBtn = document.getElementById('retry-btn');
+      retryBtn.style.display = 'inline-flex';
+      retryBtn.href = deepLink;
+    }
+  }, 2000);
+});
+</script>
 </body>
 </html>
