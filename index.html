@@ -50,6 +50,8 @@ nav.s { border-bottom-color: var(--gold-border); }
 .nav-links a:hover::after { transform: scaleX(1); }
 .nav-cta { font-size: 11px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; color: var(--dark); background: var(--gold); padding: 13px 30px; border: none; cursor: pointer; transition: background .3s, transform .2s; text-decoration: none; }
 .nav-cta:hover { background: var(--gold-light); transform: translateY(-1px); }
+.nav-cta.nav-cta-secondary { color: var(--cream-dim); background: none; border: 1px solid var(--gold-border); margin-right: 10px; }
+.nav-cta.nav-cta-secondary:hover { color: var(--cream); border-color: var(--gold); background: var(--gold-faint); transform: translateY(-1px); }
 .nav-login { font-size: 11px; font-weight: 400; letter-spacing: .15em; text-transform: uppercase; color: var(--cream-dim); text-decoration: none; padding: 13px 20px; transition: color .3s; }
 .nav-login:hover { color: var(--cream); }
 
@@ -74,6 +76,9 @@ nav.s { border-bottom-color: var(--gold-border); }
 .btn-p:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 12px 40px var(--gold-glow); }
 .btn-g { font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--cream-dim); background: none; padding: 18px 32px; border: 1px solid var(--gold-border); cursor: pointer; transition: all .3s; text-decoration: none; }
 .btn-g:hover { color: var(--cream); border-color: var(--neutral); }
+.btn-app-store { display: inline-flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; color: var(--cream); background: var(--dark-3); border: 1px solid var(--gold-border); padding: 16px 28px; cursor: pointer; transition: all .3s; text-decoration: none; }
+.btn-app-store:hover { color: var(--gold); border-color: var(--gold); background: var(--dark-4); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.btn-app-store svg { flex-shrink: 0; }
 .scroll-hint { position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0; animation: fadeIn 1s 1.4s forwards; }
 .scroll-line { width: 1px; height: 48px; background: linear-gradient(to bottom, var(--gold), transparent); animation: sd 2s 1.5s infinite; }
 .scroll-lbl { font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
@@ -322,6 +327,7 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ul>
+  <a href="https://apps.apple.com/app/healthbite/id6738970819" target="_blank" rel="noopener" class="nav-cta nav-cta-secondary">Get the App</a>
   <a href="login.html" class="nav-cta">Log In</a>
 </nav>
 
@@ -335,6 +341,12 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
     <p class="hero-sub">Connect your wearable, upload bloodwork, and ask Healix anything. Real answers from an AI that sees your full health picture.</p>
     <div class="hero-acts">
       <a href="signup.html" class="btn-p">Sign Up Free</a>
+      <a href="https://apps.apple.com/app/healthbite/id6738970819" target="_blank" rel="noopener" class="btn-app-store">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+        </svg>
+        Download App
+      </a>
       <a href="#quiz" class="btn-g">Take the Quiz ↓</a>
     </div>
   </div>
@@ -625,7 +637,15 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
     <p class="sl" style="margin-bottom:20px">Get started</p>
     <h2>Try Healix free.<br><em>No commitment.</em></h2>
     <p>Get access to the full Healix experience — mobile app for data ingestion, web dashboard for analysis and AI chat. Free tier available.</p>
-    <a href="signup.html" class="btn-p" style="display:inline-block;margin-top:8px">Sign Up Free</a>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+      <a href="signup.html" class="btn-p" style="display:inline-block">Sign Up Free</a>
+      <a href="https://apps.apple.com/app/healthbite/id6738970819" target="_blank" rel="noopener" class="btn-app-store">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+        </svg>
+        Download App
+      </a>
+    </div>
     <a href="login.html" class="cta-secondary" style="margin-top:16px;display:inline-block">Already have an account? Log in →</a>
   </div>
 </section>
@@ -633,7 +653,16 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
 <!-- FOOTER -->
 <footer>
   <div class="ft">
-    <div><div class="fb-logo">HEALIX</div><p class="fb-tag">Your health, unified. Intelligence that helps you truly understand yourself.</p></div>
+    <div>
+      <div class="fb-logo">HEALIX</div>
+      <p class="fb-tag">Your health, unified. Intelligence that helps you truly understand yourself.</p>
+      <a href="https://apps.apple.com/app/healthbite/id6738970819" target="_blank" rel="noopener" class="btn-app-store" style="margin-top:18px">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+        </svg>
+        Download on App Store
+      </a>
+    </div>
     <div class="fc"><h5>Product</h5><ul><li><a href="#how">Features</a></li><li><a href="#quiz">Quiz</a></li><li><a href="#faq">FAQ</a></li><li><a href="login.html">Dashboard</a></li></ul></div>
     <div class="fc"><h5>Legal</h5><ul><li><a href="privacy.html">Privacy Policy</a></li><li><a href="terms.html">Terms of Service</a></li></ul></div>
   </div>
