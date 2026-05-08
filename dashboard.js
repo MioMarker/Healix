@@ -1595,14 +1595,13 @@ function renderSleepPageData() {
   var latest = sessionData[0];
   var avgHours = Math.round(sessionData.reduce(function(s, d) { return s + d.totalHours; }, 0) / sessionData.length * 10) / 10;
 
-  // Sleep debt (last 7 nights)
+  // Sleep debt (last 7 nights) — net deficit so a great night offsets a bad one.
+  // Floor at 0 once at the end (no negative debt).
   var TARGET = 7;
   var recentSessions = sessionData.slice(0, 7);
-  var debt = recentSessions.reduce(function(d, s) {
-    var deficit = TARGET - s.totalHours;
-    return d + (deficit > 0 ? deficit : 0);
-  }, 0);
-  debt = Math.round(debt * 10) / 10;
+  var totalRecentHours = recentSessions.reduce(function(s, n) { return s + n.totalHours; }, 0);
+  var netDeficit = TARGET * recentSessions.length - totalRecentHours;
+  var debt = Math.round(Math.max(0, netDeficit) * 10) / 10;
 
   // Sleep score
   // Cap nights to 21 for score consistency with the dashboard's 21-day window
@@ -1804,13 +1803,12 @@ async function loadDashboardData() {
             return computeSessionMinutes(sess).actualSleepMinutes / 60;
           });
           var avgSleep = Math.round(sessionSleepHours.reduce(function(s, h) { return s + h; }, 0) / sessionSleepHours.length * 10) / 10;
+          // Sleep debt: net deficit across the last 7 nights, floor at 0 once at the end.
           var TARGET_SLEEP = 7;
           var recentSessions = sessionSleepHours.slice(0, 7);
-          var sleepDebt = recentSessions.reduce(function(debt, h) {
-            var deficit = TARGET_SLEEP - h;
-            return debt + (deficit > 0 ? deficit : 0);
-          }, 0);
-          sleepDebt = Math.round(sleepDebt * 10) / 10;
+          var totalRecentSleep = recentSessions.reduce(function(s, h) { return s + h; }, 0);
+          var sleepDebtNet = TARGET_SLEEP * recentSessions.length - totalRecentSleep;
+          var sleepDebt = Math.round(Math.max(0, sleepDebtNet) * 10) / 10;
           var totalHours = Math.round((mostRecent.actualSleepMinutes / 60) * 10) / 10;
           var totalMinutes = Math.round(mostRecent.actualSleepMinutes);
           var stageBreakdown = {};
@@ -1831,18 +1829,32 @@ async function loadDashboardData() {
 
       // Steps
       var stepsRows = byType['step_count'] || [];
-      var todaySteps = stepsRows.filter(function(r) { return r.start_date && r.start_date.startsWith(today); })
+      var todaySteps = stepsRows.filter(function(r) { return localDateStrOf(r) === today; })
         .reduce(function(s, r) { return s + parseFloat(r.value||0); }, 0);
       if (todaySteps === 0 && stepsRows.length > 0) todaySteps = parseFloat(stepsRows[0].value || 0);
       if (todaySteps > 0) metrics.steps = Math.round(todaySteps);
 
-      // HR — prefer resting HR (daily summary, stable) over instantaneous HR (fluctuates)
+      // HR — prefer Apple's resting_heart_rate when present (Apple Watch only).
+      // For 3rd-party wearables (Garmin/Oura/etc.) only raw heart_rate is written,
+      // so estimate resting from the 10th percentile of recent readings — a
+      // standard clinical approximation when no dedicated resting measurement exists.
       var restingHrRows = byType['resting_heart_rate'] || [];
       var instantHrRows = byType['heart_rate'] || [];
-      var hrRows = restingHrRows.length > 0 ? restingHrRows : instantHrRows;
-      if (hrRows.length > 0) {
-        metrics.hr = Math.round(parseFloat(hrRows[0].value));
-        timestamps.heart_rate = hrRows[0].recorded_at;
+      if (restingHrRows.length > 0) {
+        metrics.hr = Math.round(parseFloat(restingHrRows[0].value));
+        timestamps.heart_rate = restingHrRows[0].recorded_at;
+      } else if (instantHrRows.length > 0) {
+        var bpms = [];
+        for (var hi = 0; hi < Math.min(instantHrRows.length, 100); hi++) {
+          var bpm = parseFloat(instantHrRows[hi].value);
+          if (isFinite(bpm) && bpm >= 30 && bpm <= 200) bpms.push(bpm);
+        }
+        if (bpms.length > 0) {
+          bpms.sort(function(a, b) { return a - b; });
+          var p10Idx = Math.max(0, Math.floor(bpms.length * 0.1));
+          metrics.hr = Math.round(bpms[p10Idx]);
+          timestamps.heart_rate = instantHrRows[0].recorded_at;
+        }
       }
 
       // HRV — SDNN from Apple Watch (ms)
@@ -2120,7 +2132,7 @@ function renderHealthStats(byType, today) {
   var stepsData = [];
   stepsKeys.forEach(function(k) { if (byType[k]) stepsData = stepsData.concat(byType[k]); });
   if (stepsData.length > 0) {
-    var todaySteps = stepsData.filter(function(r) { return r.start_date && r.start_date.startsWith(today); })
+    var todaySteps = stepsData.filter(function(r) { return localDateStrOf(r) === today; })
       .reduce(function(s, r) { return s + parseFloat(r.value || 0); }, 0);
     if (todaySteps === 0) todaySteps = stepsData
       .filter(function(r) { return r.start_date; })
@@ -2154,7 +2166,7 @@ function renderHealthStats(byType, today) {
   var calData = [];
   calKeys.forEach(function(k) { if (byType[k]) calData = calData.concat(byType[k]); });
   if (calData.length > 0) {
-    var tc = calData.filter(function(r) { return r.start_date && r.start_date.startsWith(today); })
+    var tc = calData.filter(function(r) { return localDateStrOf(r) === today; })
       .reduce(function(s, r) { return s + parseFloat(r.value || 0); }, 0);
     if (tc === 0) tc = calData
       .filter(function(r) { return r.start_date; })
@@ -2232,7 +2244,7 @@ function renderActivityCards(byType, today) {
   function getDailyTotal(rows, dateStr) {
     var total = 0;
     (rows || []).forEach(function(r) {
-      if (r.start_date && r.start_date.startsWith(dateStr)) {
+      if (localDateStrOf(r) === dateStr) {
         total += parseFloat(r.value || 0);
       }
     });
@@ -2243,7 +2255,7 @@ function renderActivityCards(byType, today) {
     var now = new Date();
     var dayTotals = {};
     (rows || []).forEach(function(r) {
-      var day = r.start_date ? r.start_date.split('T')[0] : null;
+      var day = localDateStrOf(r);
       if (!day) return;
       var val = parseFloat(r.value || 0);
       if (!isFinite(val)) return;
@@ -2338,7 +2350,7 @@ function renderActivityCards(byType, today) {
     anyData = true;
     var distDayTotals = {};
     distRows.forEach(function(r) {
-      var day = r.start_date ? r.start_date.split('T')[0] : null;
+      var day = localDateStrOf(r);
       if (!day) return;
       distDayTotals[day] = (distDayTotals[day] || 0) + parseFloat(r.value || 0);
     });
@@ -2366,7 +2378,7 @@ function renderActivityCards(byType, today) {
 function updateMiniChart(id, data, today) {
   var dayMap = {};
   data.forEach(function(r) {
-    var day = r.start_date ? r.start_date.split('T')[0] : null;
+    var day = localDateStrOf(r);
     if (!day) return;
     dayMap[day] = (dayMap[day] || 0) + parseFloat(r.value || 0);
   });
@@ -2825,6 +2837,18 @@ function localDateStr(date) {
   return date.getFullYear() + '-'
     + String(date.getMonth()+1).padStart(2,'0') + '-'
     + String(date.getDate()).padStart(2,'0');
+}
+
+// Local-date key for a sample row. Comparing r.start_date.startsWith(YYYY-MM-DD)
+// matches the UTC prefix, which silently shifts evening samples for users east
+// of UTC into the wrong day. Always derive the local date from the parsed
+// timestamp instead.
+function localDateStrOf(row) {
+  var iso = row && (row.start_date || row.recorded_at);
+  if (!iso) return null;
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return localDateStr(d);
 }
 
 function updateMealsDateLabel() {
@@ -8656,10 +8680,10 @@ function computeEnergyBalance(ctx, days) {
     // Calories out (from HealthKit)
     var active = 0, basal = 0;
     activeRows.forEach(function(r) {
-      if (r.start_date && r.start_date.startsWith(dateStr)) active += parseFloat(r.value || 0);
+      if (localDateStrOf(r) === dateStr) active += parseFloat(r.value || 0);
     });
     basalRows.forEach(function(r) {
-      if (r.start_date && r.start_date.startsWith(dateStr)) basal += parseFloat(r.value || 0);
+      if (localDateStrOf(r) === dateStr) basal += parseFloat(r.value || 0);
     });
 
     var calOut = Math.round(active + basal);
