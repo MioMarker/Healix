@@ -134,7 +134,7 @@ body { font-family: var(--B); background: var(--dark); color: var(--cream); disp
 .nutrient-bar-fill { height: 100%; transition: width .6s ease; min-width: 2px; }
 .nutrient-bar-fill.low { background: var(--down); }
 .nutrient-bar-fill.adequate { background: var(--gold); }
-.nutrient-bar-fill.high { background: #3498db; }
+.nutrient-bar-fill.high { background: var(--info); }
 .nutrient-bar-fill.excess { background: var(--warn); }
 .nutrient-pct { width: 48px; font-size: 11px; color: var(--muted); flex-shrink: 0; text-align: right; }
 .nutrient-rda-line { position: absolute; right: 0; top: 0; bottom: 0; width: 1px; background: rgba(245,240,232,.25); }
@@ -812,7 +812,7 @@ function renderNutrientChart(chartData) {
   html += '<div class="nutrient-legend">';
   html += '<div class="nutrient-legend-item"><div class="nutrient-legend-swatch" style="background:var(--down)"></div>Low (&lt;80%)</div>';
   html += '<div class="nutrient-legend-item"><div class="nutrient-legend-swatch" style="background:var(--gold)"></div>Adequate (80-120%)</div>';
-  html += '<div class="nutrient-legend-item"><div class="nutrient-legend-swatch" style="background:#3498db"></div>Above (120-150%)</div>';
+  html += '<div class="nutrient-legend-item"><div class="nutrient-legend-swatch" style="background:var(--info)"></div>Above (120-150%)</div>';
   html += '<div class="nutrient-legend-item"><div class="nutrient-legend-swatch" style="background:var(--warn)"></div>Excess (&gt;150%)</div>';
   html += '<div class="nutrient-legend-item" style="margin-left:auto;color:var(--cream-dim)">| = 100% RDA</div>';
   html += '</div></div>';

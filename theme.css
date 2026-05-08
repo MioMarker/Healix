@@ -37,7 +37,9 @@
   --down: #e07070;
   --error: #e07070;
   --warn: #e0a070;
-  --info: #3498db;
+  /* Muted slate for "above optimal" data viz states. Was #3498db (bright
+     turquoise-blue) which read as off-brand against the gold/cream palette. */
+  --info: #6B7AA0;
 
   /* ── Alert semantic tokens ── */
   --error-border: rgba(224,112,112,0.4);
