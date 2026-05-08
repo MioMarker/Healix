@@ -1968,10 +1968,9 @@ async function loadDashboardData() {
         }
       }
 
-      // Steps
+      // Steps — source-deduped to avoid iPhone+Apple Watch double-count.
       var stepsRows = byType['step_count'] || [];
-      var todaySteps = stepsRows.filter(function(r) { return localDateStrOf(r) === today; })
-        .reduce(function(s, r) { return s + parseFloat(r.value||0); }, 0);
+      var todaySteps = dedupedDailyTotal(stepsRows, today);
       if (todaySteps === 0 && stepsRows.length > 0) todaySteps = parseFloat(stepsRows[0].value || 0);
       if (todaySteps > 0) metrics.steps = Math.round(todaySteps);
 
@@ -2273,8 +2272,7 @@ function renderHealthStats(byType, today) {
   var stepsData = [];
   stepsKeys.forEach(function(k) { if (byType[k]) stepsData = stepsData.concat(byType[k]); });
   if (stepsData.length > 0) {
-    var todaySteps = stepsData.filter(function(r) { return localDateStrOf(r) === today; })
-      .reduce(function(s, r) { return s + parseFloat(r.value || 0); }, 0);
+    var todaySteps = dedupedDailyTotal(stepsData, today);
     if (todaySteps === 0) todaySteps = stepsData
       .filter(function(r) { return r.start_date; })
       .slice(0, 3)
@@ -2307,8 +2305,7 @@ function renderHealthStats(byType, today) {
   var calData = [];
   calKeys.forEach(function(k) { if (byType[k]) calData = calData.concat(byType[k]); });
   if (calData.length > 0) {
-    var tc = calData.filter(function(r) { return localDateStrOf(r) === today; })
-      .reduce(function(s, r) { return s + parseFloat(r.value || 0); }, 0);
+    var tc = dedupedDailyTotal(calData, today);
     if (tc === 0) tc = calData
       .filter(function(r) { return r.start_date; })
       .slice(0, 3)
@@ -2383,24 +2380,31 @@ function renderActivityCards(byType, today) {
   }
 
   function getDailyTotal(rows, dateStr) {
-    var total = 0;
-    (rows || []).forEach(function(r) {
-      if (localDateStrOf(r) === dateStr) {
-        total += parseFloat(r.value || 0);
-      }
-    });
-    return total;
+    return dedupedDailyTotal(rows, dateStr);
   }
 
   function getWeeklyAvg(rows) {
     var now = new Date();
-    var dayTotals = {};
+    // Source-deduped per-day totals: max(value) per (day, source), then max
+    // across sources per day. Matches dedupedDailyTotal's logic.
+    var perDayPerSource = {};
     (rows || []).forEach(function(r) {
       var day = localDateStrOf(r);
       if (!day) return;
       var val = parseFloat(r.value || 0);
       if (!isFinite(val)) return;
-      dayTotals[day] = (dayTotals[day] || 0) + val;
+      var src = r.source_id || r.source_name || 'unknown';
+      if (!perDayPerSource[day]) perDayPerSource[day] = {};
+      if (perDayPerSource[day][src] == null || val > perDayPerSource[day][src]) {
+        perDayPerSource[day][src] = val;
+      }
+    });
+    var dayTotals = {};
+    Object.keys(perDayPerSource).forEach(function(day) {
+      var maxVal = 0;
+      var sources = perDayPerSource[day];
+      for (var s in sources) { if (sources[s] > maxVal) maxVal = sources[s]; }
+      dayTotals[day] = maxVal;
     });
     var sum = 0, count = 0;
     for (var d = 0; d < 7; d++) {
@@ -2489,11 +2493,25 @@ function renderActivityCards(byType, today) {
   var distTodayMi = distTodayM * 0.000621371;
   if (distTodayMi > 0.01 || distRows.length > 0) {
     anyData = true;
-    var distDayTotals = {};
+    // Source-deduped per-day distance totals.
+    var distPerDayPerSource = {};
     distRows.forEach(function(r) {
       var day = localDateStrOf(r);
       if (!day) return;
-      distDayTotals[day] = (distDayTotals[day] || 0) + parseFloat(r.value || 0);
+      var v = parseFloat(r.value || 0);
+      if (!isFinite(v)) return;
+      var src = r.source_id || r.source_name || 'unknown';
+      if (!distPerDayPerSource[day]) distPerDayPerSource[day] = {};
+      if (distPerDayPerSource[day][src] == null || v > distPerDayPerSource[day][src]) {
+        distPerDayPerSource[day][src] = v;
+      }
+    });
+    var distDayTotals = {};
+    Object.keys(distPerDayPerSource).forEach(function(day) {
+      var maxV = 0;
+      var srcs = distPerDayPerSource[day];
+      for (var s in srcs) { if (srcs[s] > maxV) maxV = srcs[s]; }
+      distDayTotals[day] = maxV;
     });
     var distSum = 0, distCount = 0, now = new Date();
     for (var d = 0; d < 7; d++) {
@@ -2530,11 +2548,25 @@ function renderActivityCards(byType, today) {
 }
 
 function updateMiniChart(id, data, today) {
-  var dayMap = {};
+  // Source-deduped per-day totals so iPhone+Watch overlap doesn't inflate bars.
+  var perDayPerSource = {};
   data.forEach(function(r) {
     var day = localDateStrOf(r);
     if (!day) return;
-    dayMap[day] = (dayMap[day] || 0) + parseFloat(r.value || 0);
+    var v = parseFloat(r.value || 0);
+    if (!isFinite(v)) return;
+    var src = r.source_id || r.source_name || 'unknown';
+    if (!perDayPerSource[day]) perDayPerSource[day] = {};
+    if (perDayPerSource[day][src] == null || v > perDayPerSource[day][src]) {
+      perDayPerSource[day][src] = v;
+    }
+  });
+  var dayMap = {};
+  Object.keys(perDayPerSource).forEach(function(day) {
+    var maxV = 0;
+    var srcs = perDayPerSource[day];
+    for (var s in srcs) { if (srcs[s] > maxV) maxV = srcs[s]; }
+    dayMap[day] = maxV;
   });
   var days = Object.keys(dayMap).sort().slice(-7);
   var vals = days.map(function(d) { return dayMap[d]; });
@@ -3091,6 +3123,27 @@ function localDateStrOf(row) {
   var d = new Date(iso);
   if (isNaN(d.getTime())) return null;
   return localDateStr(d);
+}
+
+// Source-deduped daily total for cumulative metrics (steps, distance, active
+// energy, exercise minutes). Mobile's get_health_cumulative_aggregates RPC
+// (mobile commit 333d2a6) does the same logic in Postgres: take MAX(value)
+// per (day, source_id) to fold same-source re-syncs, then MAX across sources
+// so iPhone + Apple Watch reporting the same daily total don't double up.
+function dedupedDailyTotal(rows, dateStr) {
+  if (!rows) return 0;
+  var perSource = {};
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (localDateStrOf(r) !== dateStr) continue;
+    var v = parseFloat(r.value || 0);
+    if (!isFinite(v)) continue;
+    var src = r.source_id || r.source_name || 'unknown';
+    if (perSource[src] == null || v > perSource[src]) perSource[src] = v;
+  }
+  var max = 0;
+  for (var k in perSource) { if (perSource[k] > max) max = perSource[k]; }
+  return max;
 }
 
 function updateMealsDateLabel() {
@@ -8927,14 +8980,9 @@ function computeEnergyBalance(ctx, days) {
       }
     });
 
-    // Calories out (from HealthKit)
-    var active = 0, basal = 0;
-    activeRows.forEach(function(r) {
-      if (localDateStrOf(r) === dateStr) active += parseFloat(r.value || 0);
-    });
-    basalRows.forEach(function(r) {
-      if (localDateStrOf(r) === dateStr) basal += parseFloat(r.value || 0);
-    });
+    // Calories out (from HealthKit) — source-deduped to handle iPhone+Watch overlap.
+    var active = dedupedDailyTotal(activeRows, dateStr);
+    var basal = dedupedDailyTotal(basalRows, dateStr);
 
     var calOut = Math.round(active + basal);
     if (calIn > 0 && calOut > 0) {
