@@ -2713,6 +2713,93 @@ function getMacroTargets() {
   return { cal: calTarget, prot: protTarget, fat: fatTarget, carbs: carbTarget, isCustom: false };
 }
 
+// ── Macro target editing ──
+function openMacroTargetModal() {
+  var p = window.userProfileData || {};
+  var pEl = document.getElementById('mt-prot');
+  var cEl = document.getElementById('mt-carbs');
+  var fEl = document.getElementById('mt-fat');
+  var calEl = document.getElementById('mt-cal');
+  var warn = document.getElementById('mt-pct-warn');
+  if (warn) warn.style.display = 'none';
+  if (pEl) pEl.value = p.target_protein_pct != null ? p.target_protein_pct : '';
+  if (cEl) cEl.value = p.target_carbs_pct != null ? p.target_carbs_pct : '';
+  if (fEl) fEl.value = p.target_fat_pct != null ? p.target_fat_pct : '';
+  if (calEl) calEl.value = p.target_calories != null ? p.target_calories : '';
+  openModal('macro-target-modal');
+}
+
+async function saveMacroTargets() {
+  var session = getSession(); if (!session || !currentUser) return;
+  var pEl = document.getElementById('mt-prot');
+  var cEl = document.getElementById('mt-carbs');
+  var fEl = document.getElementById('mt-fat');
+  var calEl = document.getElementById('mt-cal');
+  var warn = document.getElementById('mt-pct-warn');
+
+  var pVal = pEl && pEl.value !== '' ? parseInt(pEl.value, 10) : null;
+  var cVal = cEl && cEl.value !== '' ? parseInt(cEl.value, 10) : null;
+  var fVal = fEl && fEl.value !== '' ? parseInt(fEl.value, 10) : null;
+  var calVal = calEl && calEl.value !== '' ? parseInt(calEl.value, 10) : null;
+
+  // If any macro pct is set, all three must be set and sum to 100 (±1 for rounding).
+  var anyMacro = pVal != null || cVal != null || fVal != null;
+  if (anyMacro) {
+    if (pVal == null || cVal == null || fVal == null) {
+      if (warn) { warn.textContent = 'Set all three percentages, or leave all three blank.'; warn.style.display = 'block'; }
+      return;
+    }
+    var sum = pVal + cVal + fVal;
+    if (Math.abs(sum - 100) > 1) {
+      if (warn) { warn.textContent = 'Percentages must add up to 100% (you have ' + sum + '%).'; warn.style.display = 'block'; }
+      return;
+    }
+  }
+
+  var patch = {
+    target_protein_pct: pVal,
+    target_carbs_pct: cVal,
+    target_fat_pct: fVal,
+    target_calories: calVal
+  };
+
+  try {
+    var resp = await supabaseRequest(
+      '/rest/v1/profiles?auth_user_id=eq.' + currentUser.id,
+      'PATCH', patch, session.access_token
+    );
+    if (resp && resp.error) {
+      if (warn) { warn.textContent = 'Save failed: ' + resp.error.message; warn.style.display = 'block'; }
+      return;
+    }
+    // Update local profile cache so renderMacroSplit picks up the change immediately.
+    if (window.userProfileData) {
+      window.userProfileData.target_protein_pct = pVal;
+      window.userProfileData.target_carbs_pct = cVal;
+      window.userProfileData.target_fat_pct = fVal;
+      window.userProfileData.target_calories = calVal;
+    }
+    closeModal('macro-target-modal');
+    // Re-render meals page so the new targets show up.
+    if (typeof loadMealsPage === 'function') loadMealsPage();
+  } catch (e) {
+    if (warn) { warn.textContent = 'Save failed: ' + (e && e.message || 'unknown error'); warn.style.display = 'block'; }
+  }
+}
+
+function resetMacroTargets() {
+  var pEl = document.getElementById('mt-prot');
+  var cEl = document.getElementById('mt-carbs');
+  var fEl = document.getElementById('mt-fat');
+  var calEl = document.getElementById('mt-cal');
+  if (pEl) pEl.value = '';
+  if (cEl) cEl.value = '';
+  if (fEl) fEl.value = '';
+  if (calEl) calEl.value = '';
+  // Hitting Save with all blanks clears the custom targets.
+  saveMacroTargets();
+}
+
 // Render the P/C/F macro split (stacked bar + per-macro rows with grams,
 // percentage, and target deviation). Used on the meals page aggregate view.
 // Mirrors mobile commit ad5be2e.

@@ -554,7 +554,10 @@
 
         <!-- Macro split (P/C/F ratio with stacked bar) -->
         <div class="card" id="agg-macro-split-card" style="margin-bottom:16px;display:none">
-          <div class="card-label" style="margin-bottom:14px">Macro Split <span id="agg-macro-target-note" style="font-size:10px;color:var(--muted);font-weight:400;margin-left:8px"></span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="card-label" style="margin:0">Macro Split <span id="agg-macro-target-note" style="font-size:10px;color:var(--muted);font-weight:400;margin-left:8px"></span></div>
+            <button onclick="openMacroTargetModal()" style="background:none;border:1px solid var(--gold-border);color:var(--gold);font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:6px 12px;cursor:pointer;font-family:var(--B)">Edit Targets</button>
+          </div>
           <div id="agg-macro-bar" style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--dark-3);margin-bottom:14px"></div>
           <div id="agg-macro-rows"></div>
         </div>
@@ -1328,6 +1331,39 @@
   </div>
 </div>
 
+<!-- ── MACRO TARGET MODAL ── -->
+<div class="modal-overlay" id="macro-target-modal" onclick="closeModalOutside(event,'macro-target-modal')">
+  <div class="modal" style="position:relative;width:480px">
+    <button class="modal-close" onclick="closeModal('macro-target-modal')">&#10005;</button>
+    <div class="modal-title">Macro <em>Targets</em></div>
+    <div class="modal-sub">Set the protein, carb, and fat percentages you're aiming for. The three values must add up to 100%. Calorie target is optional — leave blank to use the goal-based calculation.</div>
+    <div class="modal-row">
+      <div class="modal-field" style="flex:1">
+        <label class="modal-label">Protein %</label>
+        <input class="modal-input" id="mt-prot" type="number" min="0" max="100" step="1" placeholder="30">
+      </div>
+      <div class="modal-field" style="flex:1">
+        <label class="modal-label">Carbs %</label>
+        <input class="modal-input" id="mt-carbs" type="number" min="0" max="100" step="1" placeholder="40">
+      </div>
+      <div class="modal-field" style="flex:1">
+        <label class="modal-label">Fat %</label>
+        <input class="modal-input" id="mt-fat" type="number" min="0" max="100" step="1" placeholder="30">
+      </div>
+    </div>
+    <div id="mt-pct-warn" style="font-size:11px;color:var(--warn);margin-top:-4px;margin-bottom:8px;display:none">Percentages must add up to 100%.</div>
+    <div class="modal-field">
+      <label class="modal-label">Daily calorie target <span style="color:var(--muted);font-size:9px;letter-spacing:.1em">(optional)</span></label>
+      <input class="modal-input" id="mt-cal" type="number" min="800" max="6000" step="50" placeholder="e.g. 2200 — blank uses your goal-based default">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="resetMacroTargets()" style="margin-right:auto">Reset to default</button>
+      <button class="modal-btn-secondary" onclick="closeModal('macro-target-modal')">Cancel</button>
+      <button class="modal-btn-primary" onclick="saveMacroTargets()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── HEALTHBITE CONNECT MODAL ── -->
 <div class="modal-overlay" id="healthbite-connect-modal" onclick="closeModalOutside(event,'healthbite-connect-modal')">
   <div class="modal" style="position:relative;width:520px">
@@ -1458,7 +1494,7 @@
 <script src="config.js"></script>
 <script src="components/confirm-modal.js"></script>
 <script src="insights-engine.js?v=20260508b"></script>
-<script src="dashboard.js?v=20260508f"></script>
+<script src="dashboard.js?v=20260508g"></script>
 <script src="chat-widget.js"></script>
 
 <datalist id="ex-presets"><option value="Bench Press"><option value="Overhead Press"><option value="Incline Press"><option value="Dumbbell Fly"><option value="Pull-ups"><option value="Chin-ups"><option value="Barbell Row"><option value="Cable Row"><option value="Lat Pulldown"><option value="Dumbbell Curl"><option value="Hammer Curl"><option value="Tricep Dip"><option value="Tricep Pushdown"><option value="Skull Crushers"><option value="Squat"><option value="Front Squat"><option value="Leg Press"><option value="Romanian Deadlift"><option value="Deadlift"><option value="Hip Thrust"><option value="Lunges"><option value="Leg Curl"><option value="Leg Extension"><option value="Plank"><option value="Cable Crunch"><option value="Ab Wheel"><option value="Face Pull"><option value="Running"><option value="Cycling"><option value="Row Machine"><option value="Jump Rope"></datalist>
