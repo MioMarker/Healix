@@ -111,6 +111,26 @@ body {
 .divider-line { flex: 1; height: 1px; background: var(--gold-border); }
 .divider-text { font-size: 11px; color: var(--muted); letter-spacing: .1em; }
 
+/* SIWA + magic link */
+.apple-btn {
+  width: 100%; padding: 14px; background: #000; color: #fff;
+  border: 1px solid #000; font-family: var(--B); font-size: 14px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  cursor: pointer; transition: opacity .2s; margin-bottom: 16px;
+}
+.apple-btn:hover { opacity: .85; }
+.apple-btn:disabled { opacity: .5; cursor: not-allowed; }
+.apple-btn svg { flex-shrink: 0; }
+.toggle-link {
+  display: block; width: 100%; text-align: center; background: none; border: none;
+  color: var(--gold); font-family: var(--B); font-size: 12px;
+  letter-spacing: .15em; text-transform: uppercase; cursor: pointer;
+  padding: 12px 0; transition: color .2s;
+}
+.toggle-link:hover { color: var(--gold-light); }
+.password-fields { display: none; }
+.password-fields.show { display: block; }
+
 .switch-link { text-align: center; font-size: 13px; color: var(--cream-dim); margin-top: 20px; }
 .switch-link a { color: var(--gold); text-decoration: none; }
 .switch-link a:hover { color: var(--gold-light); }
@@ -125,6 +145,9 @@ body {
 .form-wrap > *:nth-child(7) { animation-delay: .35s; }
 .form-wrap > *:nth-child(8) { animation-delay: .4s; }
 .form-wrap > *:nth-child(9) { animation-delay: .45s; }
+.form-wrap > *:nth-child(10) { animation-delay: .5s; }
+.form-wrap > *:nth-child(11) { animation-delay: .55s; }
+.form-wrap > *:nth-child(12) { animation-delay: .6s; }
 @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 768px) {
@@ -183,10 +206,17 @@ body {
 
     <div class="form-alert" id="form-alert"></div>
 
-    <div class="field">
-      <label class="field-label" for="name">Full name</label>
-      <input class="field-input" type="text" id="name" placeholder="Alex Johnson" autocomplete="name">
-      <div class="field-error" id="name-error">Please enter your name.</div>
+    <button class="apple-btn" id="apple-btn" onclick="handleApple()">
+      <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13.252 9.46c-.022-2.265 1.846-3.353 1.93-3.405-1.053-1.541-2.69-1.752-3.27-1.776-1.39-.141-2.717.819-3.426.819-.71 0-1.804-.797-2.965-.776C4.005 4.343 2.6 5.21 1.835 6.564.226 9.305 1.424 13.34 2.99 15.558c.766 1.086 1.679 2.305 2.876 2.262 1.155-.045 1.591-.745 2.987-.745 1.396 0 1.789.745 3.013.722 1.243-.022 2.03-1.103 2.79-2.197.876-1.265 1.236-2.49 1.257-2.553-.027-.012-2.415-.928-2.44-3.687zM10.99 2.79c.635-.77 1.063-1.84.946-2.905-.916.037-2.024.61-2.68 1.38-.589.683-1.103 1.776-.965 2.82 1.023.08 2.064-.519 2.7-1.295z"/>
+      </svg>
+      <span>Continue with Apple</span>
+    </button>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span class="divider-text">or</span>
+      <div class="divider-line"></div>
     </div>
 
     <div class="field">
@@ -195,14 +225,22 @@ body {
       <div class="field-error" id="email-error">Please enter a valid email address.</div>
     </div>
 
-    <div class="field">
-      <label class="field-label" for="password">Password</label>
-      <input class="field-input" type="password" id="password" placeholder="Min. 12 characters" autocomplete="new-password" oninput="checkStrength(this.value)">
-      <div class="pwd-strength">
-        <div class="pwd-bar-track"><div class="pwd-bar-fill" id="pwd-bar"></div></div>
-        <div class="pwd-label" id="pwd-label">—</div>
+    <div class="password-fields" id="password-fields">
+      <div class="field">
+        <label class="field-label" for="name">Full name</label>
+        <input class="field-input" type="text" id="name" placeholder="Alex Johnson" autocomplete="name">
+        <div class="field-error" id="name-error">Please enter your name.</div>
       </div>
-      <div class="field-error" id="password-error">Password must be at least 8 characters.</div>
+
+      <div class="field">
+        <label class="field-label" for="password">Password</label>
+        <input class="field-input" type="password" id="password" placeholder="Min. 12 characters" autocomplete="new-password" oninput="checkStrength(this.value)">
+        <div class="pwd-strength">
+          <div class="pwd-bar-track"><div class="pwd-bar-fill" id="pwd-bar"></div></div>
+          <div class="pwd-label" id="pwd-label">—</div>
+        </div>
+        <div class="field-error" id="password-error">Password must be at least 8 characters.</div>
+      </div>
     </div>
 
     <div class="terms-wrap" onclick="toggleTerms()">
@@ -210,16 +248,12 @@ body {
       <p class="terms-text">I agree to the <a href="terms.html" target="_blank" onclick="event.stopPropagation()">Terms of Service</a> and <a href="privacy.html" target="_blank" onclick="event.stopPropagation()">Privacy Policy</a>. I understand Healix is a wellness tool, not a medical device.</p>
     </div>
 
-    <button class="submit-btn" id="submit-btn" onclick="handleSignup()">
-      <span class="btn-text">Create Account</span>
+    <button class="submit-btn" id="submit-btn" onclick="handlePrimary()">
+      <span class="btn-text">Send sign-in link</span>
       <div class="btn-spinner"></div>
     </button>
 
-    <div class="divider">
-      <div class="divider-line"></div>
-      <span class="divider-text">or</span>
-      <div class="divider-line"></div>
-    </div>
+    <button class="toggle-link" id="toggle-mode" onclick="togglePasswordMode()">Set a password instead</button>
 
     <p class="switch-link">Already have an account? <a href="login.html">Sign in →</a></p>
   </div>
@@ -286,15 +320,86 @@ function setLoading(loading) {
 
 function validateEmail(val) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val); }
 
-function handleSignup() {
+var passwordMode = false;
+
+function togglePasswordMode() {
+  passwordMode = !passwordMode;
+  document.getElementById('password-fields').classList.toggle('show', passwordMode);
+  document.querySelector('#submit-btn .btn-text').textContent = passwordMode ? 'Create Account' : 'Send sign-in link';
+  document.getElementById('toggle-mode').textContent = passwordMode ? 'Use a sign-in link instead' : 'Set a password instead';
+}
+
+function getRedirectTo() {
+  var basePath = window.location.pathname.startsWith('/dev/') ? '/dev/' : '/';
+  return window.location.origin + basePath + 'confirm.html';
+}
+
+function handleApple() {
+  if (!termsAccepted) {
+    showAlert('Please accept the Terms of Service to continue.');
+    return;
+  }
+  // Supabase OAuth web flow → redirects through Apple, returns to confirm.html
+  // with #access_token in the URL hash. confirm.html already handles this.
+  var redirectTo = encodeURIComponent(getRedirectTo());
+  window.location.href = SUPABASE_URL + '/auth/v1/authorize?provider=apple&redirect_to=' + redirectTo;
+}
+
+function handlePrimary() {
   hideAlert();
-  var name = document.getElementById('name').value.trim();
   var email = document.getElementById('email').value.trim();
+  var valid = true;
+
+  ['email'].forEach(function(f) {
+    document.getElementById(f).classList.remove('error');
+    document.getElementById(f+'-error').classList.remove('show');
+  });
+
+  if (!validateEmail(email)) {
+    document.getElementById('email').classList.add('error');
+    document.getElementById('email-error').classList.add('show');
+    valid = false;
+  }
+  if (!termsAccepted) {
+    showAlert('Please accept the Terms of Service to continue.');
+    valid = false;
+  }
+  if (!valid) return;
+
+  if (passwordMode) {
+    handlePasswordSignup(email);
+  } else {
+    handleMagicLink(email);
+  }
+}
+
+function handleMagicLink(email) {
+  setLoading(true);
+  var redirectTo = encodeURIComponent(getRedirectTo());
+  supabaseRequest('/auth/v1/otp?redirect_to=' + redirectTo, 'POST', {
+    email: email,
+    create_user: true
+  }).then(function(data) {
+    setLoading(false);
+    if (data.error || data.error_description || data.msg) {
+      showAlert(data.error_description || data.msg || data.error || 'Something went wrong. Please try again.');
+    } else {
+      localStorage.setItem('healix_pending_email', email);
+      showAlert('Check your email — we sent a sign-in link to ' + email + '. Open it on this device to finish creating your account.', 'success');
+    }
+  }).catch(function(err) {
+    setLoading(false);
+    console.error('[Signup] Magic link error:', err);
+    showAlert('Unable to connect. Please check your connection and try again.');
+  });
+}
+
+function handlePasswordSignup(email) {
+  var name = document.getElementById('name').value.trim();
   var password = document.getElementById('password').value;
   var valid = true;
 
-  // Clear errors
-  ['name','email','password'].forEach(function(f) {
+  ['name','password'].forEach(function(f) {
     document.getElementById(f).classList.remove('error');
     document.getElementById(f+'-error').classList.remove('show');
   });
@@ -304,27 +409,16 @@ function handleSignup() {
     document.getElementById('name-error').classList.add('show');
     valid = false;
   }
-  if (!validateEmail(email)) {
-    document.getElementById('email').classList.add('error');
-    document.getElementById('email-error').classList.add('show');
-    valid = false;
-  }
   if (password.length < 12) {
     document.getElementById('password').classList.add('error');
     document.getElementById('password-error').textContent = 'Password must be at least 12 characters';
     document.getElementById('password-error').classList.add('show');
     valid = false;
   }
-  if (!termsAccepted) {
-    showAlert('Please accept the Terms of Service to continue.');
-    valid = false;
-  }
   if (!valid) return;
 
   setLoading(true);
-
-  var basePath = window.location.pathname.startsWith('/dev/') ? '/dev/' : '/';
-  var redirectTo = encodeURIComponent(window.location.origin + basePath + 'confirm.html');
+  var redirectTo = encodeURIComponent(getRedirectTo());
   supabaseRequest('/auth/v1/signup?redirect_to=' + redirectTo, 'POST', {
     email: email,
     password: password,
@@ -334,15 +428,11 @@ function handleSignup() {
     if (data.error || data.error_description || data.msg) {
       showAlert(data.error_description || data.msg || data.error || 'Something went wrong. Please try again.');
     } else if (data.id || (data.user && data.user.id)) {
-      // Supabase returns a fake success with empty identities when the email
-      // already exists (to prevent user enumeration). Detect this and show a
-      // helpful message instead of redirecting to the confirm page.
       var user = data.user || data;
       if (user.identities && user.identities.length === 0) {
         showAlert('An account with this email may already exist. Try signing in instead, or reset your password.');
         return;
       }
-      // Real success — redirect to confirm page
       localStorage.setItem('healix_pending_email', email);
       window.location.href = 'confirm.html';
     } else {
@@ -357,7 +447,7 @@ function handleSignup() {
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') handleSignup();
+  if (e.key === 'Enter') handlePrimary();
 });
 </script>
 </body>

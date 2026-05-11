@@ -99,6 +99,26 @@ body {
 .divider-line { flex: 1; height: 1px; background: var(--gold-border); }
 .divider-text { font-size: 11px; color: var(--muted); letter-spacing: .1em; }
 
+/* SIWA + magic link */
+.apple-btn {
+  width: 100%; padding: 14px; background: #000; color: #fff;
+  border: 1px solid #000; font-family: var(--B); font-size: 14px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  cursor: pointer; transition: opacity .2s; margin-bottom: 16px;
+}
+.apple-btn:hover { opacity: .85; }
+.apple-btn:disabled { opacity: .5; cursor: not-allowed; }
+.apple-btn svg { flex-shrink: 0; }
+.toggle-link {
+  display: block; width: 100%; text-align: center; background: none; border: none;
+  color: var(--gold); font-family: var(--B); font-size: 12px;
+  letter-spacing: .15em; text-transform: uppercase; cursor: pointer;
+  padding: 12px 0; transition: color .2s;
+}
+.toggle-link:hover { color: var(--gold-light); }
+.password-field { display: none; }
+.password-field.show { display: block; }
+
 /* Switch link */
 .switch-link { text-align: center; font-size: 13px; color: var(--cream-dim); margin-top: 24px; }
 .switch-link a { color: var(--gold); text-decoration: none; transition: color .2s; }
@@ -114,6 +134,9 @@ body {
 .form-wrap > *:nth-child(6) { animation-delay: .3s; }
 .form-wrap > *:nth-child(7) { animation-delay: .35s; }
 .form-wrap > *:nth-child(8) { animation-delay: .4s; }
+.form-wrap > *:nth-child(9) { animation-delay: .45s; }
+.form-wrap > *:nth-child(10) { animation-delay: .5s; }
+.form-wrap > *:nth-child(11) { animation-delay: .55s; }
 @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 768px) {
@@ -149,13 +172,26 @@ body {
 
     <div class="form-alert" id="form-alert"></div>
 
+    <button class="apple-btn" id="apple-btn" onclick="handleApple()">
+      <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13.252 9.46c-.022-2.265 1.846-3.353 1.93-3.405-1.053-1.541-2.69-1.752-3.27-1.776-1.39-.141-2.717.819-3.426.819-.71 0-1.804-.797-2.965-.776C4.005 4.343 2.6 5.21 1.835 6.564.226 9.305 1.424 13.34 2.99 15.558c.766 1.086 1.679 2.305 2.876 2.262 1.155-.045 1.591-.745 2.987-.745 1.396 0 1.789.745 3.013.722 1.243-.022 2.03-1.103 2.79-2.197.876-1.265 1.236-2.49 1.257-2.553-.027-.012-2.415-.928-2.44-3.687zM10.99 2.79c.635-.77 1.063-1.84.946-2.905-.916.037-2.024.61-2.68 1.38-.589.683-1.103 1.776-.965 2.82 1.023.08 2.064-.519 2.7-1.295z"/>
+      </svg>
+      <span>Sign in with Apple</span>
+    </button>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span class="divider-text">or</span>
+      <div class="divider-line"></div>
+    </div>
+
     <div class="field">
       <label class="field-label" for="email">Email address</label>
       <input class="field-input" type="email" id="email" placeholder="you@example.com" autocomplete="email">
       <div class="field-error" id="email-error">Please enter a valid email address.</div>
     </div>
 
-    <div class="field">
+    <div class="field password-field" id="password-field">
       <div class="field-row">
         <label class="field-label" for="password">Password</label>
         <a href="#" class="forgot-link" onclick="showForgot(event)">Forgot password?</a>
@@ -164,16 +200,12 @@ body {
       <div class="field-error" id="password-error">Please enter your password.</div>
     </div>
 
-    <button class="submit-btn" id="submit-btn" onclick="handleLogin()">
-      <span class="btn-text">Sign In</span>
+    <button class="submit-btn" id="submit-btn" onclick="handlePrimary()">
+      <span class="btn-text">Send sign-in link</span>
       <div class="btn-spinner"></div>
     </button>
 
-    <div class="divider">
-      <div class="divider-line"></div>
-      <span class="divider-text">or</span>
-      <div class="divider-line"></div>
-    </div>
+    <button class="toggle-link" id="toggle-mode" onclick="togglePasswordMode()">Use password instead</button>
 
     <p class="switch-link">Don't have an account? <a href="signup.html">Create one free →</a></p>
   </div>
@@ -212,28 +244,92 @@ function validateEmail(val) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
 }
 
-function handleLogin() {
+var passwordMode = (function() {
+  try { return localStorage.getItem('healix_last_auth_method') === 'password'; } catch (e) { return false; }
+})();
+
+function applyPasswordMode() {
+  document.getElementById('password-field').classList.toggle('show', passwordMode);
+  document.querySelector('#submit-btn .btn-text').textContent = passwordMode ? 'Sign In' : 'Send sign-in link';
+  document.getElementById('toggle-mode').textContent = passwordMode ? 'Use a sign-in link instead' : 'Use password instead';
+}
+
+function togglePasswordMode() {
+  passwordMode = !passwordMode;
+  applyPasswordMode();
+}
+
+function getRedirectTo() {
+  var basePath = window.location.pathname.startsWith('/dev/') ? '/dev/' : '/';
+  return window.location.origin + basePath + 'confirm.html';
+}
+
+function setLastMethod(method) {
+  try { localStorage.setItem('healix_last_auth_method', method); } catch (e) {}
+}
+
+function handleApple() {
+  // Supabase OAuth web flow → redirects through Apple, returns to confirm.html
+  // with #access_token in the URL hash. confirm.html already handles this.
+  setLastMethod('apple');
+  var redirectTo = encodeURIComponent(getRedirectTo());
+  window.location.href = SUPABASE_URL + '/auth/v1/authorize?provider=apple&redirect_to=' + redirectTo;
+}
+
+function handlePrimary() {
   hideAlert();
   var email = document.getElementById('email').value.trim();
-  var password = document.getElementById('password').value;
   var valid = true;
 
   document.getElementById('email').classList.remove('error');
-  document.getElementById('password').classList.remove('error');
   document.getElementById('email-error').classList.remove('show');
-  document.getElementById('password-error').classList.remove('show');
 
   if (!validateEmail(email)) {
     document.getElementById('email').classList.add('error');
     document.getElementById('email-error').classList.add('show');
     valid = false;
   }
+  if (!valid) return;
+
+  if (passwordMode) {
+    handlePasswordLogin(email);
+  } else {
+    handleMagicLink(email);
+  }
+}
+
+function handleMagicLink(email) {
+  setLoading(true);
+  var redirectTo = encodeURIComponent(getRedirectTo());
+  // create_user: false — don't silently create accounts from typo'd emails
+  // at the login screen. Users with no account see an error from Supabase.
+  supabaseRequest('/auth/v1/otp?redirect_to=' + redirectTo, 'POST', {
+    email: email,
+    create_user: false
+  }).then(function(data) {
+    setLoading(false);
+    if (data.error || data.error_description || data.msg) {
+      showAlert(data.error_description || data.msg || data.error || 'Something went wrong. Please try again.');
+    } else {
+      setLastMethod('magic-link');
+      showAlert('Check your email — we sent a sign-in link to ' + email + '. Open it on this device to sign in.', 'success');
+    }
+  }).catch(function(err) {
+    setLoading(false);
+    console.error('[Login] Magic link error:', err);
+    showAlert('Unable to connect. Please check your connection and try again.');
+  });
+}
+
+function handlePasswordLogin(email) {
+  var password = document.getElementById('password').value;
+  document.getElementById('password').classList.remove('error');
+  document.getElementById('password-error').classList.remove('show');
   if (!password) {
     document.getElementById('password').classList.add('error');
     document.getElementById('password-error').classList.add('show');
-    valid = false;
+    return;
   }
-  if (!valid) return;
 
   setLoading(true);
 
@@ -245,14 +341,13 @@ function handleLogin() {
     if (data.error || data.error_description) {
       showAlert(data.error_description || 'Invalid email or password. Please try again.');
     } else if (data.access_token) {
-      // Store session
       localStorage.setItem('healix_session', JSON.stringify({
         access_token: data.access_token,
         refresh_token: data.refresh_token,
         expires_at: Date.now() + (data.expires_in || 3600) * 1000,
         user: data.user
       }));
-      // Redirect to chat
+      setLastMethod('password');
       window.location.href = 'dashboard.html';
     } else {
       showAlert('Something went wrong. Please try again.');
@@ -262,6 +357,8 @@ function handleLogin() {
     showAlert('Unable to connect. Please check your connection and try again.');
   });
 }
+
+applyPasswordMode();
 
 function showForgot(e) {
   e.preventDefault();
@@ -292,7 +389,7 @@ function showForgot(e) {
 
 // Enter key support
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') handleLogin();
+  if (e.key === 'Enter') handlePrimary();
 });
 
 // Check if already logged in
