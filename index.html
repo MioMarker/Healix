@@ -624,7 +624,7 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
         </div>
         <div class="fi">
           <button class="fq" onclick="tFaq(this)">Is Healix free?<div class="ficon">+</div></button>
-          <div class="fa">Healix has a free tier with full access to health tracking, insights, and data visualization. Premium ($14.99/month or $100/year) unlocks unlimited AI health chat.</div>
+          <div class="fa">Healix has a free tier with full access to health tracking, insights, and data visualization. Healix Pro ($9.99/month or $59.99/year, with a 1-week free trial) unlocks unlimited AI health chat.</div>
         </div>
       </div>
     </div>
@@ -861,11 +861,11 @@ function tFaq(btn){
     try { localStorage.setItem('healix_quiz_data', JSON.stringify(quizData)); } catch(e) {}
 
     if(tier==='free'){
-      rb.innerHTML='<div class="hq-rec hq-rec-featured"><div class="hq-rec-tier">Free Tier</div><div class="hq-rec-headline">Zero commitment. Real value.</div><div class="hq-rec-desc">Full access to health tracking, insights, and data visualization. Upgrade to Premium ($14.99/mo or $100/yr) anytime for unlimited AI health chat.</div><a href="signup.html" class="hq-cta-btn">Sign Up Free \u2192</a></div>';
+      rb.innerHTML='<div class="hq-rec hq-rec-featured"><div class="hq-rec-tier">Free Tier</div><div class="hq-rec-headline">Zero commitment. Real value.</div><div class="hq-rec-desc">Full access to health tracking, insights, and data visualization. Upgrade to Healix Pro ($9.99/mo or $59.99/yr, 1-week free trial) anytime for unlimited AI health chat.</div><a href="signup.html" class="hq-cta-btn">Sign Up Free \u2192</a></div>';
     } else if(tier==='premium'){
-      rb.innerHTML='<div class="hq-rec hq-rec-featured"><div class="hq-rec-tier">Recommended: Premium \u2014 $14.99/mo or $100/yr</div><div class="hq-rec-headline">The full picture, without the noise.</div><div class="hq-rec-desc">You\u2019re exactly who Healix was built for. Premium unlocks unlimited AI health chat on top of full health tracking, wearable sync, and bloodwork analysis.</div><a href="signup.html" class="hq-cta-btn">Get Started \u2192</a></div>';
+      rb.innerHTML='<div class="hq-rec hq-rec-featured"><div class="hq-rec-tier">Recommended: Healix Pro \u2014 $9.99/mo or $59.99/yr</div><div class="hq-rec-headline">The full picture, without the noise.</div><div class="hq-rec-desc">You\u2019re exactly who Healix was built for. Start with a 1-week free trial. Healix Pro unlocks unlimited AI health chat on top of full health tracking, wearable sync, and bloodwork analysis.</div><a href="signup.html" class="hq-cta-btn">Get Started \u2192</a></div>';
     } else {
-      rb.innerHTML='<div class="hq-rec hq-rec-featured"><div class="hq-rec-tier">Recommended: Premium \u2014 $14.99/mo or $100/yr</div><div class="hq-rec-headline">Everything Healix offers. Unlocked.</div><div class="hq-rec-desc">You\u2019re the power user we built this for. Premium gives you unlimited AI health chat, plus full access to wearable sync, bloodwork analysis, and Vitality Age.</div><a href="signup.html" class="hq-cta-btn">Get Started \u2192</a></div>';
+      rb.innerHTML='<div class="hq-rec hq-rec-featured"><div class="hq-rec-tier">Recommended: Healix Pro \u2014 $9.99/mo or $59.99/yr</div><div class="hq-rec-headline">Everything Healix offers. Unlocked.</div><div class="hq-rec-desc">You\u2019re the power user we built this for. Start with a 1-week free trial. Healix Pro gives you unlimited AI health chat, plus full access to wearable sync, bloodwork analysis, and Vitality Age.</div><a href="signup.html" class="hq-cta-btn">Get Started \u2192</a></div>';
     }
 
     allPanes.forEach(function(p){ p.style.display='none'; });
