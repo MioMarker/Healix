@@ -2864,21 +2864,33 @@ var MICRO_DEFS = {
     // Vitamin A comes as IU from API; convert to mcg RAE (1 mcg RAE = 3.33 IU retinol)
     { key: 'Vitamin A',   aliases: ['Vitamin A'],           rda: 900,  unit: 'mcg', display: 'Vitamin A',  iuToMcg: 3.33 },
     { key: 'Vitamin C',   aliases: ['Vitamin C'],           rda: 90,   unit: 'mg',  display: 'Vitamin C'      },
-    { key: 'Vitamin D',   aliases: ['Vitamin D'],           rda: 20,   unit: 'mcg', display: 'Vitamin D'      },
+    // Vitamin D forms: D2 (ergocalciferol, plant/fungal) and D3 (cholecalciferol, animal/sun)
+    // both convert to the same active hormone. Sum for daily-RDA tracking.
+    { key: 'Vitamin D',   aliases: ['Vitamin D', 'Vitamin D2', 'Vitamin D3', 'Cholecalciferol', 'Ergocalciferol'], rda: 20, unit: 'mcg', display: 'Vitamin D' },
     { key: 'Vitamin E',   aliases: ['Vitamin E'],           rda: 15,   unit: 'mg',  display: 'Vitamin E'      },
-    { key: 'Vitamin K',   aliases: ['Vitamin K'],           rda: 120,  unit: 'mcg', display: 'Vitamin K'      },
+    // Vitamin K forms: K1 (phylloquinone, leafy greens; clotting) and K2 (menaquinones,
+    // fermented + animal; bone/cardiovascular). Different clinical roles but sum for RDA.
+    // If a user wants K2-specific tracking we'd add a second entry — flag in #170.
+    { key: 'Vitamin K',   aliases: ['Vitamin K', 'Vitamin K1', 'Vitamin K2', 'Phylloquinone', 'Menaquinone', 'Menaquinone-4', 'Menaquinone-7', 'MK-4', 'MK-7'], rda: 120, unit: 'mcg', display: 'Vitamin K' },
     { key: 'Thiamin',     aliases: ['Thiamin','Thiamine'],  rda: 1.2,  unit: 'mg',  display: 'B1 Thiamin'     },
     { key: 'Riboflavin',  aliases: ['Riboflavin'],          rda: 1.3,  unit: 'mg',  display: 'B2 Riboflavin'  },
     { key: 'Niacin',      aliases: ['Niacin'],              rda: 16,   unit: 'mg',  display: 'B3 Niacin'      },
     { key: 'Vitamin B6',  aliases: ['Vitamin B6'],          rda: 1.7,  unit: 'mg',  display: 'B6'             },
-    { key: 'Folate',      aliases: ['Folate','Folic Acid'], rda: 400,  unit: 'mcg', display: 'B9 Folate'      },
-    { key: 'Vitamin B12', aliases: ['Vitamin B12'],         rda: 2.4,  unit: 'mcg', display: 'B12'            },
+    // Folate forms: folic acid (synthetic, fortified foods + most supps), methylfolate
+    // (active form, bioavailable for MTHFR carriers), folinic acid. All count toward RDA.
+    { key: 'Folate',      aliases: ['Folate', 'Folic Acid', 'L-Methylfolate', '5-MTHF', 'Methylfolate', 'Folinic Acid', '5-Methyltetrahydrofolate'], rda: 400, unit: 'mcg', display: 'B9 Folate' },
+    // B12 forms: cyanocobalamin (synthetic, most supps), methylcobalamin (active),
+    // hydroxycobalamin (injectable), adenosylcobalamin (mitochondrial). All act as B12.
+    { key: 'Vitamin B12', aliases: ['Vitamin B12', 'Cobalamin', 'Cyanocobalamin', 'Methylcobalamin', 'Hydroxycobalamin', 'Adenosylcobalamin'], rda: 2.4, unit: 'mcg', display: 'B12' },
     { key: 'Biotin',      aliases: ['Biotin'],              rda: 30,   unit: 'mcg', display: 'Biotin'         },
     { key: 'Choline',     aliases: ['Choline'],             rda: 550,  unit: 'mg',  display: 'Choline'        },
   ],
   minerals: [
     { key: 'Calcium',     aliases: ['Calcium'],             rda: 1000, unit: 'mg',  display: 'Calcium'        },
-    { key: 'Iron',        aliases: ['Iron'],                rda: 18,   unit: 'mg',  display: 'Iron'           },
+    // Iron supplement salt forms vary widely (bioavailability differs). For RDA
+    // tracking, count elemental iron mass regardless of form. Bioavailability
+    // modeling is a separate refinement.
+    { key: 'Iron',        aliases: ['Iron', 'Ferrous Fumarate', 'Ferrous Sulfate', 'Ferrous Gluconate', 'Ferrous Bisglycinate', 'Iron Bisglycinate', 'Heme Iron'], rda: 18, unit: 'mg', display: 'Iron' },
     { key: 'Magnesium',   aliases: ['Magnesium'],           rda: 400,  unit: 'mg',  display: 'Magnesium'      },
     { key: 'Phosphorus',  aliases: ['Phosphorus'],          rda: 700,  unit: 'mg',  display: 'Phosphorus'     },
     { key: 'Potassium',   aliases: ['Potassium'],           rda: 4700, unit: 'mg',  display: 'Potassium'      },
