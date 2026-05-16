@@ -90,6 +90,67 @@ nav.s { border-bottom-color: var(--gold-border); }
 .st { font-family: var(--F); font-size: clamp(36px,5vw,66px); font-weight: 300; line-height: 1.05; }
 .st em { font-style: italic; color: var(--gold); }
 
+/* STAKES */
+.stakes { padding: 120px 64px; background: var(--dark-2); border-top: 1px solid var(--gold-border); border-bottom: 1px solid var(--gold-border); position: relative; overflow: hidden; }
+.stakes::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(184,151,90,.05), transparent 70%); pointer-events: none; }
+.stakes .wrap { max-width: 900px; position: relative; z-index: 1; }
+.stakes-content { text-align: center; }
+.stakes-h { font-family: var(--F); font-size: clamp(36px,5.5vw,68px); font-weight: 300; line-height: 1.05; margin-top: 14px; margin-bottom: 24px; }
+.stakes-h em { font-style: italic; color: var(--gold); }
+.stakes-p { font-size: 17px; line-height: 1.75; color: var(--cream-dim); max-width: 680px; margin: 0 auto; }
+
+/* PRODUCT GALLERY */
+.product-gallery { padding: 140px 64px; background: var(--dark); }
+.product-gallery .wrap { max-width: 1200px; }
+.pg-head { text-align: center; margin-bottom: 80px; }
+.pg-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 36px; }
+.pg-card { background: var(--dark-2); border: 1px solid var(--gold-border); padding: 0; transition: border-color .4s, transform .4s; overflow: hidden; }
+.pg-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+.pg-visual { aspect-ratio: 16/11; background: var(--dark-3); position: relative; border-bottom: 1px solid var(--gold-border); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.pg-body { padding: 28px 32px 32px; }
+.pg-body h3 { font-family: var(--F); font-size: 24px; font-weight: 400; margin-bottom: 12px; line-height: 1.2; }
+.pg-body p { font-size: 14px; line-height: 1.7; color: var(--cream-dim); }
+/* Vitality Age mockup */
+.pg-va { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.pg-va-hero { background: var(--dark-3); border: 1px solid var(--gold-border); padding: 14px 16px; text-align: center; }
+.pg-va-eyebrow { font-size: 8px; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.pg-va-num { font-family: var(--F); font-size: 44px; font-weight: 300; color: var(--cream); line-height: 1; margin-bottom: 4px; }
+.pg-va-delta { font-size: 10px; color: var(--up); }
+.pg-va-drivers { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.pg-va-driver { background: var(--dark-3); border: 1px solid var(--gold-border); padding: 8px 10px; text-align: center; }
+.pg-va-driver-label { font-size: 8px; letter-spacing: .15em; text-transform: uppercase; color: var(--cream-dim); margin-bottom: 3px; }
+.pg-va-driver-val { font-family: var(--F); font-size: 16px; color: var(--gold); }
+/* Bloodwork mockup */
+.pg-bw { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.pg-bw-row { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; background: var(--dark-3); border: 1px solid var(--gold-border); padding: 8px 12px; font-size: 10px; }
+.pg-bw-name { color: var(--cream); font-weight: 500; }
+.pg-bw-val { color: var(--gold); font-family: var(--F); font-size: 13px; }
+.pg-bw-status { font-size: 8px; letter-spacing: .15em; text-transform: uppercase; padding: 2px 6px; border: 1px solid; }
+.pg-bw-ok { color: var(--up); border-color: rgba(111,207,138,.4); }
+.pg-bw-warn { color: var(--warn); border-color: rgba(224,160,112,.4); }
+.pg-bw-trend { font-size: 9px; color: var(--cream-dim); font-family: var(--B); }
+/* Clinic report mockup */
+.pg-cr { width: 100%; background: var(--cream); color: var(--dark); padding: 14px 16px; font-family: var(--B); font-size: 9px; line-height: 1.5; position: relative; overflow: hidden; }
+.pg-cr::before { content: 'HEALIX'; position: absolute; top: 8px; right: 12px; font-family: var(--F); font-size: 10px; letter-spacing: .25em; color: var(--gold); }
+.pg-cr-h { font-family: var(--F); font-size: 14px; font-weight: 400; margin-bottom: 8px; color: var(--dark); }
+.pg-cr-sec { margin-bottom: 8px; }
+.pg-cr-sec-label { font-size: 7px; letter-spacing: .25em; text-transform: uppercase; color: rgba(11,11,11,.5); margin-bottom: 2px; }
+.pg-cr-sec-text { font-size: 9px; color: var(--dark); line-height: 1.5; }
+.pg-cr-divider { height: 1px; background: rgba(11,11,11,.15); margin: 8px 0; }
+
+/* TESTIMONIALS */
+.testimonials { padding: 140px 64px; background: var(--dark-2); border-top: 1px solid var(--gold-border); }
+.testimonials .wrap { max-width: 1200px; }
+.t-head { text-align: center; margin-bottom: 64px; }
+.t-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+.t-card { background: var(--dark); border: 1px solid var(--gold-border); padding: 36px 32px; position: relative; transition: border-color .4s; }
+.t-card:hover { border-color: var(--gold); }
+.t-card::before { content: '"'; position: absolute; top: 0; left: 24px; font-family: var(--F); font-size: 90px; line-height: 1; color: var(--gold); opacity: .35; font-style: italic; }
+.t-quote { font-family: var(--F); font-size: 18px; font-weight: 400; line-height: 1.55; color: var(--cream); margin-top: 28px; margin-bottom: 28px; font-style: italic; }
+.t-meta { display: flex; flex-direction: column; gap: 4px; padding-top: 20px; border-top: 1px solid var(--gold-border); }
+.t-name { font-size: 13px; font-weight: 500; color: var(--cream); }
+.t-role { font-size: 11px; color: var(--cream-dim); letter-spacing: .08em; }
+
 /* HOW */
 .how { padding: 140px 64px; background: var(--dark-2); }
 .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--gold-border); border: 1px solid var(--gold-border); margin-top: 80px; }
@@ -189,82 +250,6 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
 .d2 { transition-delay: .2s; }
 .d3 { transition-delay: .3s; }
 
-/* QUIZ */
-#healix-quiz { width: 100%; font-family: var(--B); }
-.hq-header { text-align: center; margin-bottom: 56px; }
-.hq-eyebrow { display: inline-flex; align-items: center; gap: 10px; font-size: 10px; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold-border); padding: 9px 20px; margin-bottom: 24px; }
-.hq-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: hqdot 2s infinite; }
-@keyframes hqdot { 0%,100% { box-shadow: 0 0 0 0 rgba(184,151,90,.6); } 50% { box-shadow: 0 0 0 5px rgba(184,151,90,0); } }
-.hq-title { font-family: var(--F); font-size: clamp(36px,5.5vw,62px); font-weight: 300; line-height: 1.05; margin-bottom: 18px; }
-.hq-title em { font-style: italic; color: var(--gold); }
-.hq-sub { font-size: 15px; font-weight: 300; line-height: 1.75; color: var(--cream-dim); max-width: 460px; margin: 0 auto; }
-.hq-card { background: var(--dark-2); border: 1px solid var(--gold-border); }
-.hq-card::before { display: none; }
-.hq-progress-wrap { padding: 36px 52px 0; position: relative; z-index: 10; }
-.hq-progress-meta { display: flex; justify-content: space-between; margin-bottom: 14px; }
-.hq-progress-label { font-size: 10px; letter-spacing: .28em; text-transform: uppercase; color: var(--gold); }
-.hq-progress-frac { font-size: 10px; letter-spacing: .1em; color: var(--muted); font-variant-numeric: tabular-nums; }
-.hq-bar-track { height: 1px; background: var(--gold-border); position: relative; }
-.hq-bar-fill { position: absolute; top: 0; left: 0; bottom: 0; background: linear-gradient(to right, var(--gold), var(--gold-light)); transition: width .5s cubic-bezier(.4,0,.2,1); width: 0%; }
-.hq-bar-pip { position: absolute; top: 50%; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); transform: translate(-50%,-50%); transition: left .5s cubic-bezier(.4,0,.2,1); left: 0%; box-shadow: 0 0 10px rgba(184,151,90,.55); }
-.hq-pane { display: none; padding: 44px 52px 36px; }
-.hq-pane.hq-active { display: block; }
-.hq-pane.hq-visible { opacity: 1; transform: translateX(0); }
-.hq-q-ghost { position: absolute; top: 20px; right: 40px; font-family: var(--F); font-size: 110px; font-weight: 300; color: rgba(184,151,90,.055); line-height: 1; pointer-events: none; user-select: none; }
-.hq-q-text { font-family: var(--F); font-size: clamp(22px,3.2vw,30px); font-weight: 300; line-height: 1.25; margin-bottom: 8px; padding-right: 80px; }
-.hq-q-hint { font-size: 12px; color: var(--muted); letter-spacing: .04em; margin-bottom: 32px; }
-.hq-choices { display: flex; flex-direction: column; gap: 8px; }
-.hq-choice { background: none; border: 1px solid var(--gold-border); color: var(--cream); font-family: var(--B); padding: 16px 20px; cursor: pointer; text-align: left; transition: border-color .22s, background .22s, transform .18s; display: flex; align-items: center; gap: 16px; width: 100%; position: relative; z-index: 10; }
-.hq-choice:hover { border-color: rgba(184,151,90,.45); background: var(--gold-faint); transform: translateX(3px); }
-.hq-choice.hq-sel { border-color: var(--gold); background: rgba(184,151,90,.11); }
-.hq-choice.hq-sel .hq-bullet { background: var(--gold); border-color: var(--gold); }
-.hq-choice.hq-sel .hq-bullet::after { opacity: 1; }
-.hq-bullet { width: 16px; height: 16px; border: 1px solid var(--gold-border); border-radius: 50%; flex-shrink: 0; position: relative; transition: background .2s, border-color .2s; }
-.hq-bullet::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--dark-2); opacity: 0; transition: opacity .2s; }
-.hq-choice-key { font-size: 11px; letter-spacing: .12em; color: var(--gold); flex-shrink: 0; width: 16px; font-family: var(--F); }
-.hq-choice-text { font-size: 14px; line-height: 1.45; }
-.hq-choices-multi { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.hq-choice-multi { background: none; border: 1px solid var(--gold-border); color: var(--cream); font-family: var(--B); padding: 15px 18px; cursor: pointer; text-align: left; transition: border-color .22s, background .22s; display: flex; align-items: center; gap: 12px; width: 100%; position: relative; z-index: 10; }
-.hq-choice-multi:hover { border-color: rgba(184,151,90,.45); background: var(--gold-faint); }
-.hq-choice-multi.hq-sel { border-color: var(--gold); background: rgba(184,151,90,.11); }
-.hq-choice-multi.hq-sel .hq-checkbox { background: var(--gold); border-color: var(--gold); }
-.hq-choice-multi.hq-sel .hq-checkbox::after { opacity: 1; }
-.hq-checkbox { width: 15px; height: 15px; border: 1px solid var(--gold-border); flex-shrink: 0; position: relative; transition: background .2s, border-color .2s; }
-.hq-checkbox::after { content: '✓'; position: absolute; inset: 0; display: grid; place-items: center; font-size: 9px; color: var(--dark); opacity: 0; transition: opacity .2s; }
-.hq-choice-multi-text { font-size: 13px; line-height: 1.4; }
-.hq-nav { display: flex; align-items: center; justify-content: space-between; padding: 8px 52px 44px; position: relative; z-index: 10; }
-.hq-btn-back { background: none; border: 1px solid var(--gold-border); color: var(--muted); font-family: var(--B); font-size: 11px; letter-spacing: .15em; text-transform: uppercase; padding: 12px 24px; cursor: pointer; transition: border-color .22s, color .22s; }
-.hq-btn-back:hover { border-color: rgba(245,240,232,.3); color: var(--cream-dim); }
-.hq-btn-back:disabled { opacity: 0; pointer-events: none; }
-.hq-btn-next { background: var(--gold); border: none; color: var(--dark); font-family: var(--B); font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; padding: 14px 44px; cursor: pointer; transition: background .22s, transform .18s, box-shadow .22s, opacity .22s; opacity: .35; }
-.hq-btn-next.hq-ready { opacity: 1; }
-.hq-btn-next.hq-ready:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 10px 32px rgba(184,151,90,.28); }
-#hq-result { display: none; padding: 56px 52px 60px; position: relative; z-index: 2; animation: hqfadeup .55s ease forwards; }
-@keyframes hqfadeup { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-.hq-result-tag { font-size: 10px; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 28px; }
-.hq-plan-badge { display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--gold-border); padding: 10px 22px; margin-bottom: 32px; }
-.hq-plan-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
-.hq-plan-badge-text { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
-.hq-summary-title { font-family: var(--F); font-size: clamp(28px,4vw,44px); font-weight: 300; line-height: 1.1; margin-bottom: 20px; }
-.hq-summary-title em { font-style: italic; color: var(--gold); }
-.hq-summary-body { font-size: 15px; line-height: 1.85; color: var(--cream-dim); max-width: 580px; margin-bottom: 40px; }
-.hq-summary-body strong { color: var(--cream); font-weight: 500; }
-.hq-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 44px; }
-.hq-chip { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; border: 1px solid var(--gold-border); padding: 7px 14px; color: var(--cream-dim); }
-.hq-chip span { color: var(--gold); margin-right: 6px; }
-.hq-divider { border: none; border-top: 1px solid var(--gold-border); margin-bottom: 40px; }
-.hq-rec { background: var(--dark-3); border: 1px solid var(--gold-border); padding: 36px 40px; margin-bottom: 12px; }
-.hq-rec.hq-rec-featured { border-color: var(--gold); }
-.hq-rec-tier { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
-.hq-rec-headline { font-family: var(--F); font-size: 26px; font-weight: 300; margin-bottom: 10px; line-height: 1.2; }
-.hq-rec-desc { font-size: 14px; line-height: 1.75; color: var(--cream-dim); margin-bottom: 28px; }
-.hq-cta-btn { display: block; text-align: center; background: var(--gold); color: var(--dark); font-family: var(--B); font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; padding: 17px 52px; text-decoration: none; border: none; cursor: pointer; transition: background .22s, transform .18s, box-shadow .22s; }
-.hq-cta-btn:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 10px 36px var(--gold-glow); }
-.hq-result-actions { margin-top: 32px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.hq-retry-btn { background: none; border: none; font-family: var(--B); font-size: 12px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; transition: color .2s; }
-.hq-retry-btn:hover { color: var(--cream-dim); }
-.quiz-section { padding: 140px 64px; background: var(--dark); }
-.quiz-section .wrap { max-width: 800px; }
 @media (max-width: 768px) {
   /* NAV */
   nav { padding: 20px 24px; }
@@ -272,6 +257,19 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
 
   /* HERO */
   .hero { padding: 120px 24px 80px; }
+
+  /* STAKES */
+  .stakes { padding: 80px 24px; }
+
+  /* PRODUCT GALLERY */
+  .product-gallery { padding: 80px 24px; }
+  .pg-grid { grid-template-columns: 1fr; gap: 24px; }
+  .pg-head { margin-bottom: 56px; }
+
+  /* TESTIMONIALS */
+  .testimonials { padding: 80px 24px; }
+  .t-grid { grid-template-columns: 1fr; gap: 24px; }
+  .t-head { margin-bottom: 48px; }
 
   /* HOW */
   .how { padding: 80px 24px; }
@@ -303,14 +301,6 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
   .fb-bot { flex-direction: column; gap: 16px; text-align: center; }
   .fb-legal { flex-wrap: wrap; justify-content: center; }
 
-  /* QUIZ */
-  .quiz-section { padding: 80px 24px; }
-  .hq-progress-wrap, .hq-pane, .hq-nav, #hq-result { padding-left: 24px; padding-right: 24px; }
-  .hq-choices-multi { grid-template-columns: 1fr; }
-  .hq-q-text { padding-right: 0; }
-  .hq-q-ghost { display: none; }
-  .hq-rec { padding: 28px 24px; }
-}
 
 @media (max-width: 400px) {
   .integ-grid { grid-template-columns: 1fr; }
@@ -324,7 +314,7 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
   <a href="#" class="logo"><div class="logo-mark">H</div>HEALIX</a>
   <ul class="nav-links">
     <li><a href="#how">How it works</a></li>
-    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#product">Product</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ul>
   <a href="https://apps.apple.com/app/healthbite/id6738970819" target="_blank" rel="noopener" class="nav-cta nav-cta-secondary">Get the App</a>
@@ -336,18 +326,28 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
   <div class="hbg"></div>
   <div class="hlines"></div>
   <div class="hero-content">
-    <div class="eyebrow"><span class="dot"></span> Beta now open — completely free</div>
+    <div class="eyebrow"><span class="dot"></span> Free forever · Pro from $9.99/mo</div>
     <h1>AI that actually<br><em>knows your body.</em></h1>
-    <p class="hero-sub">Connect your wearable, upload bloodwork, and ask Healix anything. Real answers from an AI that sees your full health picture.</p>
+    <p class="hero-sub">Your doctor sees you 10 minutes a year. Healix is every day. Connect your wearable, upload bloodwork, and ask anything — real answers from an AI that sees your full health picture.</p>
     <div class="hero-acts">
       <a href="signup.html" class="btn-p">Sign Up Free</a>
       <a href="https://apps.apple.com/app/healthbite/id6738970819" target="_blank" rel="noopener" class="btn-app-store">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
           <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
         </svg>
-        Download App
+        Download for iOS
       </a>
-      <a href="#quiz" class="btn-g">Take the Quiz ↓</a>
+    </div>
+  </div>
+</section>
+
+<!-- STAKES -->
+<section class="stakes">
+  <div class="wrap">
+    <div class="stakes-content reveal">
+      <p class="sl">The gap</p>
+      <h2 class="stakes-h">Your annual physical is <em>10 minutes long.</em></h2>
+      <p class="stakes-p">Your wearable knows. Your labs know. Your meals know. They just don't talk to each other — and your doctor doesn't have time to. Most of what's happening in your body never makes it into a 10-minute checkup. Healix sees the whole picture.</p>
     </div>
   </div>
 </section>
@@ -441,162 +441,142 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
   </div>
 </section>
 
-<!-- QUIZ -->
-<section class="quiz-section" id="quiz">
-  <div class="wrap" style="margin:0 auto">
-    <div id="healix-quiz">
+<!-- PRODUCT GALLERY -->
+<section class="product-gallery" id="product">
+  <div class="wrap">
+    <div class="pg-head reveal">
+      <p class="sl">The product</p>
+      <h2 class="st">A health dashboard that <em>actually does the work.</em></h2>
+    </div>
+    <div class="pg-grid">
 
-      <div class="hq-header">
-        <div class="hq-eyebrow"><span class="hq-dot"></span>2 minutes · 8 questions</div>
-        <h2 class="hq-title">Find out if Healix<br>is right for <em>you</em></h2>
-        <p class="hq-sub">No fluff. We'll tell you exactly where to start — or whether to bother at all.</p>
+      <!-- Vitality Age card -->
+      <div class="pg-card reveal">
+        <div class="pg-visual">
+          <div class="pg-va">
+            <div class="pg-va-hero">
+              <div class="pg-va-eyebrow">Vitality Age</div>
+              <div class="pg-va-num">31</div>
+              <div class="pg-va-delta">↓ 3 yrs younger than chronological</div>
+            </div>
+            <div class="pg-va-drivers">
+              <div class="pg-va-driver"><div class="pg-va-driver-label">Heart</div><div class="pg-va-driver-val">92</div></div>
+              <div class="pg-va-driver"><div class="pg-va-driver-label">Sleep</div><div class="pg-va-driver-val">78</div></div>
+              <div class="pg-va-driver"><div class="pg-va-driver-label">Strength</div><div class="pg-va-driver-val">86</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="pg-body">
+          <h3>One number that moves</h3>
+          <p>Your Vitality Age blends bloodwork, resting heart rate, weight, sleep, strength, and aerobic capacity into a single biological age — updated daily as your data flows in. Watch it move as you change behavior.</p>
+        </div>
       </div>
 
-      <div class="hq-card">
-
-        <div class="hq-progress-wrap" id="hq-pw">
-          <div class="hq-progress-meta">
-            <span class="hq-progress-label">Building your profile</span>
-            <span class="hq-progress-frac" id="hq-frac">1 of 8</span>
-          </div>
-          <div class="hq-bar-track">
-            <div class="hq-bar-fill" id="hq-fill"></div>
-            <div class="hq-bar-pip"  id="hq-pip"></div>
-          </div>
-        </div>
-
-        <!-- Q1 -->
-        <div class="hq-pane hq-active" id="hq-q0">
-          <div class="hq-q-ghost">01</div>
-          <p class="hq-q-text">How much effort will you tolerate before you ghost the app?</p>
-          <p class="hq-q-hint">Be honest. The algorithm deserves truth.</p>
-          <div class="hq-choices">
-            <button class="hq-choice" data-val="1"><span class="hq-bullet"></span><span class="hq-choice-key">A</span><span class="hq-choice-text">10 seconds/day — I will not be domesticated</span></button>
-            <button class="hq-choice" data-val="2"><span class="hq-bullet"></span><span class="hq-choice-key">B</span><span class="hq-choice-text">1 minute/day — I'll tap buttons, no essays</span></button>
-            <button class="hq-choice" data-val="3"><span class="hq-bullet"></span><span class="hq-choice-key">C</span><span class="hq-choice-text">3 minutes/day — quick check-in + meal photo is fine</span></button>
-            <button class="hq-choice" data-val="4"><span class="hq-bullet"></span><span class="hq-choice-key">D</span><span class="hq-choice-text">10 minutes/day — give me the full cockpit</span></button>
-          </div>
-        </div>
-
-        <!-- Q2 -->
-        <div class="hq-pane" id="hq-q1">
-          <div class="hq-q-ghost">02</div>
-          <p class="hq-q-text">When an app asks "did you drink / eat junk / skip the workout"… you usually:</p>
-          <p class="hq-q-hint">Still no wrong answers. Mostly.</p>
-          <div class="hq-choices">
-            <button class="hq-choice" data-val="4"><span class="hq-bullet"></span><span class="hq-choice-key">A</span><span class="hq-choice-text">Confess immediately — the algorithm deserves truth</span></button>
-            <button class="hq-choice" data-val="3"><span class="hq-bullet"></span><span class="hq-choice-key">B</span><span class="hq-choice-text">Tell the truth-ish — I round down to protect my ego</span></button>
-            <button class="hq-choice" data-val="2" data-cap="free"><span class="hq-bullet"></span><span class="hq-choice-key">C</span><span class="hq-choice-text">Lie — I'm here for vibes, not consequences</span></button>
-            <button class="hq-choice" data-val="1" data-cap="free"><span class="hq-bullet"></span><span class="hq-choice-key">D</span><span class="hq-choice-text">Skip the question — I refuse to be perceived</span></button>
-          </div>
-        </div>
-
-        <!-- Q3 -->
-        <div class="hq-pane" id="hq-q2">
-          <div class="hq-q-ghost">03</div>
-          <p class="hq-q-text">How often do you see a medical provider — doctor, labs, therapy, PT, etc.?</p>
-          <p class="hq-q-hint">Any type of provider counts</p>
-          <div class="hq-choices">
-            <button class="hq-choice" data-val="1"><span class="hq-bullet"></span><span class="hq-choice-key">A</span><span class="hq-choice-text">Only if I'm dying</span></button>
-            <button class="hq-choice" data-val="2"><span class="hq-bullet"></span><span class="hq-choice-key">B</span><span class="hq-choice-text">Once a year</span></button>
-            <button class="hq-choice" data-val="3"><span class="hq-bullet"></span><span class="hq-choice-key">C</span><span class="hq-choice-text">2–4 times/year</span></button>
-            <button class="hq-choice" data-val="4"><span class="hq-bullet"></span><span class="hq-choice-key">D</span><span class="hq-choice-text">Regularly — ongoing care or frequent check-ins</span></button>
+      <!-- Bloodwork card -->
+      <div class="pg-card reveal d1">
+        <div class="pg-visual">
+          <div class="pg-bw">
+            <div class="pg-bw-row">
+              <div>
+                <div class="pg-bw-name">LDL Cholesterol</div>
+                <div class="pg-bw-trend">↓ 22% over 6 mo</div>
+              </div>
+              <div class="pg-bw-val">98</div>
+              <div class="pg-bw-status pg-bw-ok">Optimal</div>
+            </div>
+            <div class="pg-bw-row">
+              <div>
+                <div class="pg-bw-name">HbA1c</div>
+                <div class="pg-bw-trend">Stable over 12 mo</div>
+              </div>
+              <div class="pg-bw-val">5.2</div>
+              <div class="pg-bw-status pg-bw-ok">Optimal</div>
+            </div>
+            <div class="pg-bw-row">
+              <div>
+                <div class="pg-bw-name">Ferritin</div>
+                <div class="pg-bw-trend">↓ 30% over 6 mo</div>
+              </div>
+              <div class="pg-bw-val">18</div>
+              <div class="pg-bw-status pg-bw-warn">Low</div>
+            </div>
+            <div class="pg-bw-row">
+              <div>
+                <div class="pg-bw-name">Vitamin D</div>
+                <div class="pg-bw-trend">↑ 14% over 3 mo</div>
+              </div>
+              <div class="pg-bw-val">42</div>
+              <div class="pg-bw-status pg-bw-ok">Optimal</div>
+            </div>
           </div>
         </div>
+        <div class="pg-body">
+          <h3>Bloodwork that means something</h3>
+          <p>Upload any lab PDF — Quest, Labcorp, hospital portal — and Healix extracts every biomarker, plots the trend, and flags what's drifting. Your labs stop being a PDF and start being a story.</p>
+        </div>
+      </div>
 
-        <!-- Q4 -->
-        <div class="hq-pane" id="hq-q3">
-          <div class="hq-q-ghost">04</div>
-          <p class="hq-q-text">Your health knowledge level is:</p>
-          <p class="hq-q-hint">Self-assessment. We won't quiz you.</p>
-          <div class="hq-choices">
-            <button class="hq-choice" data-val="1"><span class="hq-bullet"></span><span class="hq-choice-key">A</span><span class="hq-choice-text">Golden retriever — tell me what button to press</span></button>
-            <button class="hq-choice" data-val="2"><span class="hq-bullet"></span><span class="hq-choice-key">B</span><span class="hq-choice-text">Competent adult — I know basics; I want structure</span></button>
-            <button class="hq-choice" data-val="3"><span class="hq-bullet"></span><span class="hq-choice-key">C</span><span class="hq-choice-text">Weekend warrior — I go to the gym, I eat my greens, leave me alone</span></button>
-            <button class="hq-choice" data-val="4"><span class="hq-bullet"></span><span class="hq-choice-key">D</span><span class="hq-choice-text">Biohacker — I read studies, track everything, and I will not apologise for it</span></button>
+      <!-- Clinic report card -->
+      <div class="pg-card reveal d2">
+        <div class="pg-visual">
+          <div class="pg-cr">
+            <div class="pg-cr-h">Doctor Visit Brief</div>
+            <div class="pg-cr-sec">
+              <div class="pg-cr-sec-label">Worth discussing</div>
+              <div class="pg-cr-sec-text">Ferritin trending down (52 → 18 ng/mL, 6 mo). Coincides with reported low energy. Suggest iron panel + cause workup.</div>
+            </div>
+            <div class="pg-cr-divider"></div>
+            <div class="pg-cr-sec">
+              <div class="pg-cr-sec-label">Stable / on-track</div>
+              <div class="pg-cr-sec-text">Lipid panel optimal. HbA1c 5.2%. Resting HR baseline 58 bpm (improved from 64 last yr).</div>
+            </div>
+            <div class="pg-cr-divider"></div>
+            <div class="pg-cr-sec">
+              <div class="pg-cr-sec-label">Questions to ask</div>
+              <div class="pg-cr-sec-text">1. Iron studies to rule out absorption issue? 2. Ferritin re-test in 8 weeks?</div>
+            </div>
           </div>
         </div>
-
-        <!-- Q5 -->
-        <div class="hq-pane" id="hq-q4">
-          <div class="hq-q-ghost">05</div>
-          <p class="hq-q-text">What are you most trying to improve?</p>
-          <p class="hq-q-hint">Pick all that apply</p>
-          <div class="hq-choices-multi">
-            <button class="hq-choice-multi" data-val="goal-energy"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">Steady all-day energy — no crashes</span></button>
-            <button class="hq-choice-multi" data-val="goal-sleep"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">Better sleep / mornings</span></button>
-            <button class="hq-choice-multi" data-val="goal-workout"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">Workout performance / body comp</span></button>
-            <button class="hq-choice-multi" data-val="goal-focus"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">Focus / productivity</span></button>
-            <button class="hq-choice-multi" data-val="goal-mood"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">Mood / emotional stability</span></button>
-            <button class="hq-choice-multi" data-val="goal-longevity"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">Longevity &amp; disease prevention — playing the long game</span></button>
-          </div>
+        <div class="pg-body">
+          <h3>Shareable with your doctor</h3>
+          <p>A one-page brief your doctor can actually use — what's drifting, what's stable, the right questions to ask. Hand it over at your annual physical and stop wasting half the appointment on data your phone already knows.</p>
         </div>
+      </div>
 
-        <!-- Q6 multi-select -->
-        <div class="hq-pane" id="hq-q5">
-          <div class="hq-q-ghost">06</div>
-          <p class="hq-q-text">Non-negotiables.</p>
-          <p class="hq-q-hint">Pick as many as you like — we'll work around them, not against them</p>
-          <div class="hq-choices-multi">
-            <button class="hq-choice-multi" data-val="no-caffeine"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">I'm not giving up caffeine</span></button>
-            <button class="hq-choice-multi" data-val="no-alcohol"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">I'm not giving up alcohol</span></button>
-            <button class="hq-choice-multi" data-val="no-tracking"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">I'm not tracking calories / macros</span></button>
-            <button class="hq-choice-multi" data-val="no-cooking"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">I'm not cooking more</span></button>
-            <button class="hq-choice-multi" data-val="no-workout"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">I'm not working out more</span></button>
-            <button class="hq-choice-multi" data-val="sleep-constrained"><span class="hq-checkbox"></span><span class="hq-choice-multi-text">My sleep is constrained — baby / shift work / travel / insomnia</span></button>
-          </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="wrap">
+    <div class="t-head reveal">
+      <p class="sl">From members</p>
+      <h2 class="st">Real users, <em>real findings.</em></h2>
+    </div>
+    <div class="t-grid">
+      <div class="t-card reveal">
+        <p class="t-quote">Healix flagged that my ferritin had dropped 30% over six months while my sleep efficiency was tanking. My GP missed it. My naturopath confirmed iron deficiency on the next test.</p>
+        <div class="t-meta">
+          <div class="t-name">Sarah K.</div>
+          <div class="t-role">Longevity-curious member</div>
         </div>
-
-        <!-- Q7 -->
-        <div class="hq-pane" id="hq-q6">
-          <div class="hq-q-ghost">07</div>
-          <p class="hq-q-text">What are you currently tracking with?</p>
-          <p class="hq-q-hint">Pick whatever you actually own and use</p>
-          <div class="hq-choices">
-            <button class="hq-choice" data-val="wearable-none"><span class="hq-bullet"></span><span class="hq-choice-key">A</span><span class="hq-choice-text">Nothing yet</span></button>
-            <button class="hq-choice" data-val="wearable-apple"><span class="hq-bullet"></span><span class="hq-choice-key">B</span><span class="hq-choice-text">Apple Watch / iPhone Health</span></button>
-            <button class="hq-choice" data-val="wearable-oura"><span class="hq-bullet"></span><span class="hq-choice-key">C</span><span class="hq-choice-text">Oura Ring</span></button>
-            <button class="hq-choice" data-val="wearable-whoop"><span class="hq-bullet"></span><span class="hq-choice-key">D</span><span class="hq-choice-text">Whoop</span></button>
-            <button class="hq-choice" data-val="wearable-multi"><span class="hq-bullet"></span><span class="hq-choice-key">E</span><span class="hq-choice-text">Multiple devices</span></button>
-          </div>
+      </div>
+      <div class="t-card reveal d1">
+        <p class="t-quote">I uploaded three years of lab PDFs in ten minutes. Healix found a vitamin D trend across them that nobody had ever shown me on a single chart. Genuinely changed how I think about my health.</p>
+        <div class="t-meta">
+          <div class="t-name">David M.</div>
+          <div class="t-role">Quantified-self / endurance athlete</div>
         </div>
-
-        <!-- Q8 -->
-        <div class="hq-pane" id="hq-q7">
-          <div class="hq-q-ghost">08</div>
-          <p class="hq-q-text">Final question: what made you look this up today?</p>
-          <p class="hq-q-hint">No wrong answers here</p>
-          <div class="hq-choices">
-            <button class="hq-choice" data-val="why-wall"><span class="hq-bullet"></span><span class="hq-choice-key">A</span><span class="hq-choice-text">I hit a wall — something has to change</span></button>
-            <button class="hq-choice" data-val="why-diagnosis"><span class="hq-bullet"></span><span class="hq-choice-key">B</span><span class="hq-choice-text">I got a diagnosis or a result that concerned me</span></button>
-            <button class="hq-choice" data-val="why-proactive"><span class="hq-bullet"></span><span class="hq-choice-key">C</span><span class="hq-choice-text">I want to get ahead of problems before they start</span></button>
-            <button class="hq-choice" data-val="why-better"><span class="hq-bullet"></span><span class="hq-choice-key">D</span><span class="hq-choice-text">I just want to feel better day to day</span></button>
-            <button class="hq-choice" data-val="why-curious"><span class="hq-bullet"></span><span class="hq-choice-key">E</span><span class="hq-choice-text">Someone recommended it / I was curious</span></button>
-          </div>
+      </div>
+      <div class="t-card reveal d2">
+        <p class="t-quote">I went in with the Healix brief and my doctor said "this is the most useful thing a patient has handed me." We spent the appointment on what mattered instead of recapping my labs.</p>
+        <div class="t-meta">
+          <div class="t-name">Priya R.</div>
+          <div class="t-role">Healix Pro member, 8 months</div>
         </div>
-
-        <!-- Result -->
-        <div id="hq-result">
-          <span class="hq-result-tag">Your Healix Profile</span>
-          <div class="hq-plan-badge"><span class="hq-plan-badge-dot"></span><span class="hq-plan-badge-text" id="hq-badge-text"></span></div>
-          <h3 class="hq-summary-title" id="hq-summary-title"></h3>
-          <p class="hq-summary-body" id="hq-summary-body"></p>
-          <div class="hq-chips" id="hq-chips"></div>
-          <hr class="hq-divider">
-          <div id="hq-rec-block"></div>
-          <div class="hq-result-actions">
-            <button class="hq-retry-btn" id="hq-retry">Retake the quiz</button>
-          </div>
-        </div>
-
-        <!-- Nav -->
-        <div class="hq-nav" id="hq-nav">
-          <button class="hq-btn-back" id="hq-back" disabled>← Back</button>
-          <button class="hq-btn-next" id="hq-next">Continue →</button>
-        </div>
-
-      </div><!-- /hq-card -->
-    </div><!-- /healix-quiz -->
+      </div>
+    </div>
   </div>
 </section>
 
@@ -611,20 +591,24 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
       </div>
       <div class="faq-list reveal d1">
         <div class="fi open">
+          <button class="fq" onclick="tFaq(this)">Is Healix free?<div class="ficon">+</div></button>
+          <div class="fa">Yes — the free tier includes full health tracking, Vitality Age, insights, and data visualization. Healix Pro ($9.99/month or $59.99/year) adds unlimited AI health chat. No trials, no surprises — you choose when (and if) to upgrade.</div>
+        </div>
+        <div class="fi">
+          <button class="fq" onclick="tFaq(this)">Can I use Healix without an Apple Watch?<div class="ficon">+</div></button>
+          <div class="fa">Yes. You can upload bloodwork PDFs, log meals, and enter fitness/strength tests manually. A wearable adds richer continuous data (sleep, heart rate, recovery), but it's not required. Oura Ring and Whoop support are coming soon.</div>
+        </div>
+        <div class="fi">
           <button class="fq" onclick="tFaq(this)">How does Healix protect my health data?<div class="ficon">+</div></button>
           <div class="fa">Your data is encrypted end-to-end, stored on HIPAA-compliant infrastructure, and never sold to third parties. You retain full ownership and can export or delete it at any time. We use read-only OAuth connections — we never store your device credentials.</div>
         </div>
         <div class="fi">
-          <button class="fq" onclick="tFaq(this)">Which devices are supported?<div class="ficon">+</div></button>
-          <div class="fa">We currently support Apple Watch and Apple Health, with Oura Ring and Whoop coming soon. You can also upload blood panel PDFs directly. We add new integrations based on member demand.</div>
+          <button class="fq" onclick="tFaq(this)">What happens if I delete my account?<div class="ficon">+</div></button>
+          <div class="fa">All your data — labs, wearable history, meals, AI chat memory — is permanently deleted from our systems. You can also export everything as a download before deleting, so you keep a copy.</div>
         </div>
         <div class="fi">
           <button class="fq" onclick="tFaq(this)">Is Healix a medical device?<div class="ficon">+</div></button>
-          <div class="fa">Healix is a personal health intelligence platform, not a medical device. Our insights are for informational and wellness purposes and should not replace professional medical advice, diagnosis, or treatment. Always consult your physician for medical decisions.</div>
-        </div>
-        <div class="fi">
-          <button class="fq" onclick="tFaq(this)">Is Healix free?<div class="ficon">+</div></button>
-          <div class="fa">Healix has a free tier with full access to health tracking, insights, and data visualization. Premium ($14.99/month or $100/year) unlocks unlimited AI health chat.</div>
+          <div class="fa">No. Healix is a personal health intelligence platform, not a medical device. Insights are informational and should not replace professional medical advice, diagnosis, or treatment. Always consult your physician for medical decisions — and bring your Healix brief to your appointment.</div>
         </div>
       </div>
     </div>
@@ -635,15 +619,15 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
 <section class="cta">
   <div class="cta-in reveal">
     <p class="sl" style="margin-bottom:20px">Get started</p>
-    <h2>Try Healix free.<br><em>No commitment.</em></h2>
-    <p>Get access to the full Healix experience — mobile app for data ingestion, web dashboard for analysis and AI chat. Free tier available.</p>
+    <h2>Start with the free tier.<br><em>Upgrade if it earns it.</em></h2>
+    <p>Full access to health tracking, Vitality Age, and insights on the free tier. Healix Pro adds unlimited AI health chat for $9.99/mo or $59.99/yr.</p>
     <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:8px">
       <a href="signup.html" class="btn-p" style="display:inline-block">Sign Up Free</a>
       <a href="https://apps.apple.com/app/healthbite/id6738970819" target="_blank" rel="noopener" class="btn-app-store">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
           <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
         </svg>
-        Download App
+        Download for iOS
       </a>
     </div>
     <a href="login.html" class="cta-secondary" style="margin-top:16px;display:inline-block">Already have an account? Log in →</a>
@@ -663,7 +647,7 @@ footer { border-top: 1px solid var(--gold-border); padding: 60px 64px 44px; }
         Download on App Store
       </a>
     </div>
-    <div class="fc"><h5>Product</h5><ul><li><a href="#how">Features</a></li><li><a href="#quiz">Quiz</a></li><li><a href="#faq">FAQ</a></li><li><a href="login.html">Dashboard</a></li></ul></div>
+    <div class="fc"><h5>Product</h5><ul><li><a href="#how">How it works</a></li><li><a href="#product">Product</a></li><li><a href="#faq">FAQ</a></li><li><a href="login.html">Dashboard</a></li></ul></div>
     <div class="fc"><h5>Legal</h5><ul><li><a href="privacy.html">Privacy Policy</a></li><li><a href="terms.html">Terms of Service</a></li></ul></div>
   </div>
   <div class="fb-bot">
@@ -691,201 +675,5 @@ function tFaq(btn){
 // CTA form removed — direct signup link used instead
 </script>
 
-<script>
-/* HEALIX QUIZ ENGINE */
-(function(){
-  var TOTAL=8, MULTI_Q=5, MULTI_Q2=4;
-  var cur=0, answers=new Array(8).fill(null), multiSel=new Set(), goalSel=new Set(), hardCapFree=false;
-
-  var allPanes = [];
-  for(var i=0;i<TOTAL;i++){ allPanes.push(document.getElementById('hq-q'+i)); }
-
-  var nextBtn = document.getElementById('hq-next');
-  var backBtn = document.getElementById('hq-back');
-  var navEl   = document.getElementById('hq-nav');
-  var resultEl= document.getElementById('hq-result');
-  var fillEl  = document.getElementById('hq-fill');
-  var pipEl   = document.getElementById('hq-pip');
-  var fracEl  = document.getElementById('hq-frac');
-
-  // Hide all panes first
-  allPanes.forEach(function(p){ p.style.display='none'; });
-  // Show first
-  allPanes[0].style.display='block';
-  updateProgress();
-
-  function updateProgress(){
-    var pct=(cur/TOTAL)*100;
-    fillEl.style.width=pct+'%';
-    pipEl.style.left=pct+'%';
-    fracEl.textContent=(cur+1)+' of '+TOTAL;
-    backBtn.disabled=(cur===0);
-    var ready=(cur===MULTI_Q || cur===MULTI_Q2 || answers[cur]!==null);
-    if(ready){ nextBtn.classList.add('hq-ready'); }
-    else { nextBtn.classList.remove('hq-ready'); }
-  }
-
-  function goTo(idx){
-    allPanes.forEach(function(p){ p.style.display='none'; });
-    allPanes[idx].style.display='block';
-    cur=idx;
-    updateProgress();
-  }
-
-  // Choice click handler - attached directly to each button
-  function attachChoiceHandlers(){
-    var choices = document.querySelectorAll('.hq-choice');
-    choices.forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var paneId = btn.closest('.hq-pane').id;
-        var paneIdx = parseInt(paneId.replace('hq-q',''));
-        if(paneIdx !== cur) return;
-        // Deselect others in same pane
-        btn.closest('.hq-choices').querySelectorAll('.hq-choice').forEach(function(b){ b.classList.remove('hq-sel'); });
-        btn.classList.add('hq-sel');
-        answers[cur] = btn.getAttribute('data-val');
-        if(cur===1){ hardCapFree=(btn.getAttribute('data-cap')==='free'); }
-        nextBtn.classList.add('hq-ready');
-      });
-    });
-    var multiChoices = document.querySelectorAll('.hq-choice-multi');
-    multiChoices.forEach(function(btn){
-      btn.addEventListener('click', function(){
-        btn.classList.toggle('hq-sel');
-        var v=btn.getAttribute('data-val');
-        var paneIdx = parseInt(btn.closest('.hq-pane').id.replace('hq-q',''));
-        if(paneIdx === MULTI_Q2) {
-          // Q4 goals multi-select
-          if(goalSel.has(v)){ goalSel.delete(v); } else { goalSel.add(v); }
-        } else {
-          // Q5 non-negotiables multi-select
-          if(multiSel.has(v)){ multiSel.delete(v); } else { multiSel.add(v); }
-        }
-      });
-    });
-  }
-  attachChoiceHandlers();
-
-  nextBtn.addEventListener('click', function(){
-    if(cur!==MULTI_Q && cur!==MULTI_Q2 && answers[cur]===null) return;
-    if(cur < TOTAL-1){ goTo(cur+1); }
-    else { buildResult(); }
-  });
-
-  backBtn.addEventListener('click', function(){
-    if(cur>0){ goTo(cur-1); }
-  });
-
-  var EM={'goal-energy':'steady all-day energy','goal-sleep':'better sleep quality','goal-workout':'fitness and performance','goal-focus':'focus and clarity','goal-mood':'stress and emotional balance','goal-longevity':'long-term health and longevity'};
-  var CM={'no-caffeine':'keeping caffeine','no-alcohol':'keeping alcohol','no-tracking':'skipping calorie tracking','no-cooking':'not cooking more','no-workout':'not adding workouts','sleep-constrained':'working around constrained sleep'};
-  var WM={'wearable-none':'No wearable yet','wearable-apple':'Apple Watch / iPhone Health','wearable-oura':'Oura Ring','wearable-whoop':'Whoop','wearable-multi':'Multiple devices'};
-  var YM={'why-wall':'Hit a wall','why-diagnosis':'Recent diagnosis / result','why-proactive':'Getting ahead of problems','why-better':'Just want to feel better','why-curious':'Curious / recommended'};
-  function eL(v){return['','10 sec/day','1 min/day','3 min/day','10 min/day'][v]||'';}
-  function hL(v){return['','Skips questions','Vibes-only','Rounds down','Full confessor'][v]||'';}
-  function mL(v){return['','Rarely sees providers','Annual check-up','Sees providers 2-4x/yr','Regular ongoing care'][v]||'';}
-  function kL(v){return['','Golden retriever mode','Competent adult','Weekend warrior','Biohacker'][v]||'';}
-
-  function calcTier(){
-    var q1=parseInt(answers[0])||0, q2=parseInt(answers[1])||0, q3=parseInt(answers[2])||0, q4=parseInt(answers[3])||0;
-    // If effort is 10sec or 1min/day, always free
-    if(q1 <= 2) return 'free';
-    // If dishonest/skips questions, always free
-    if(hardCapFree) return 'free';
-    var eng=q1+q2;
-    if(q3===4||(q4===4&&eng>=6)) return 'clinical';
-    if(eng>=4&&q4>=2) return 'premium';
-    return 'free';
-  }
-
-  function buildResult(){
-    var tier=calcTier();
-    var q1=parseInt(answers[0])||0, q2=parseInt(answers[1])||0, q3=parseInt(answers[2])||0, q4=parseInt(answers[3])||0;
-    var goalsList=Array.from(goalSel).map(function(v){return EM[v]||v;}); var energy=goalsList.length>0?goalsList[0]:'better health';
-    var wearable=WM[answers[6]]||'';
-    var why=YM[answers[7]]||'';
-    var noWear=(answers[6]==='wearable-none');
-    var cons=Array.from(multiSel).map(function(v){return CM[v];}).filter(Boolean);
-    var badge,title,body;
-
-    if(tier==='free'){
-      badge='Recommended: Free Plan';
-      if(hardCapFree||q2<=2){
-        title='Start simple. <em>No pressure.</em>';
-        body='You are here for <strong>'+energy+'</strong> and that is a completely valid place to start. <strong>Free gets you in the door</strong> with zero commitment. If it clicks, you will know.';
-      } else {
-        title='Low lift, <em>real results.</em>';
-        body='You want <strong>'+energy+'</strong> and you have got '+eL(q1)+' to give it. The free tier is built for exactly this.';
-      }
-    } else if(tier==='premium'){
-      badge='Recommended: Premium';
-      if(q4>=3){
-        title='You are going to <em>actually use this.</em>';
-        body=kL(q4)+' energy, '+eL(q1)+' to give, and you want <strong>'+energy+'</strong>. You are the profile Premium was built for.';
-      } else {
-        title='Ready when <em>you are.</em>';
-        body='You want <strong>'+energy+'</strong>, willing to put in '+eL(q1)+', and honest enough that your data will actually mean something.';
-      }
-    } else {
-      badge='Recommended: Full Access';
-      title='You are built for <em>this.</em>';
-      body=kL(q4)+'-level knowledge, '+mL(q3).toLowerCase()+', and you want <strong>'+energy+'</strong>. Healix was built for exactly your profile — Premium unlocks the full AI experience.';
-    }
-
-    if(cons.length>0) body+=' Constraints noted: <strong>'+cons.join(', ')+'</strong> — Healix will work around them.';
-    if(noWear) body+=' No wearable yet — Healix still works and you will see what is worth getting once inside.';
-
-    var chips=[
-      {l:'Effort',v:eL(q1)},{l:'Engagement',v:hL(q2)},{l:'Medical',v:mL(q3)},
-      {l:'Knowledge',v:kL(q4)},{l:'Goal',v:energy.charAt(0).toUpperCase()+energy.slice(1)},
-      {l:'Tracking',v:wearable},{l:'Why now',v:why}
-    ].filter(function(c){return c.v;});
-
-    document.getElementById('hq-badge-text').textContent=badge;
-    document.getElementById('hq-summary-title').innerHTML=title;
-    document.getElementById('hq-summary-body').innerHTML=body;
-    document.getElementById('hq-chips').innerHTML=chips.map(function(c){
-      return '<div class="hq-chip"><span>'+c.l+'</span>'+c.v+'</div>';
-    }).join('');
-
-    var rb=document.getElementById('hq-rec-block');
-    // Store quiz data for personalized onboarding
-    var quizData = {
-      goals: Array.from(goalSel),
-      constraints: Array.from(multiSel),
-      wearable: answers[6] || '',
-      motivation: answers[7] || '',
-      engagementLevel: parseInt(answers[0]) || 0,
-      knowledgeLevel: parseInt(answers[3]) || 0,
-      tier: tier
-    };
-    try { localStorage.setItem('healix_quiz_data', JSON.stringify(quizData)); } catch(e) {}
-
-    if(tier==='free'){
-      rb.innerHTML='<div class="hq-rec hq-rec-featured"><div class="hq-rec-tier">Free Tier</div><div class="hq-rec-headline">Zero commitment. Real value.</div><div class="hq-rec-desc">Full access to health tracking, insights, and data visualization. Upgrade to Premium ($14.99/mo or $100/yr) anytime for unlimited AI health chat.</div><a href="signup.html" class="hq-cta-btn">Sign Up Free \u2192</a></div>';
-    } else if(tier==='premium'){
-      rb.innerHTML='<div class="hq-rec hq-rec-featured"><div class="hq-rec-tier">Recommended: Premium \u2014 $14.99/mo or $100/yr</div><div class="hq-rec-headline">The full picture, without the noise.</div><div class="hq-rec-desc">You\u2019re exactly who Healix was built for. Premium unlocks unlimited AI health chat on top of full health tracking, wearable sync, and bloodwork analysis.</div><a href="signup.html" class="hq-cta-btn">Get Started \u2192</a></div>';
-    } else {
-      rb.innerHTML='<div class="hq-rec hq-rec-featured"><div class="hq-rec-tier">Recommended: Premium \u2014 $14.99/mo or $100/yr</div><div class="hq-rec-headline">Everything Healix offers. Unlocked.</div><div class="hq-rec-desc">You\u2019re the power user we built this for. Premium gives you unlimited AI health chat, plus full access to wearable sync, bloodwork analysis, and Vitality Age.</div><a href="signup.html" class="hq-cta-btn">Get Started \u2192</a></div>';
-    }
-
-    allPanes.forEach(function(p){ p.style.display='none'; });
-    navEl.style.display='none';
-    fillEl.style.width='100%';
-    pipEl.style.left='100%';
-    fracEl.textContent='Complete';
-    resultEl.style.display='block';
-  }
-
-  document.getElementById('hq-retry').addEventListener('click',function(){
-    answers.fill(null); multiSel.clear(); goalSel.clear(); hardCapFree=false;
-    document.querySelectorAll('.hq-choice,.hq-choice-multi').forEach(function(b){ b.classList.remove('hq-sel'); });
-    resultEl.style.display='none';
-    navEl.style.display='';
-    nextBtn.classList.remove('hq-ready');
-    goTo(0);
-  });
-
-})();
-</script>
 </body>
 </html>
