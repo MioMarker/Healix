@@ -303,14 +303,14 @@ async function init() {
             var planEl = document.querySelector('.user-plan');
             if (planEl) {
               var newTier = freshProfile[0].subscription_tier || 'free';
-              planEl.textContent = newTier === 'premium' ? 'Premium' : newTier === 'clinical' ? 'Clinical' : 'Free';
+              planEl.textContent = newTier === 'premium' ? 'Healix Pro' : newTier === 'clinical' ? 'Clinical' : 'Free';
             }
           }
         } catch(e) { console.warn('[Upgrade] Profile refresh error:', e); }
         // Show success banner
         var errEl = document.getElementById('profile-errors');
         if (errEl) {
-          errEl.textContent = 'Welcome to Premium! You now have full access to Healix AI.';
+          errEl.textContent = 'Welcome to Healix Pro! You now have full access to Healix AI.';
           errEl.style.display = 'block';
           errEl.style.color = 'var(--up)';
           errEl.style.borderColor = 'var(--success-border)';
@@ -9094,10 +9094,10 @@ function selectPlan(plan) {
   document.getElementById('toggle-annual').classList.toggle('active', plan === 'annual');
 
   if (plan === 'monthly') {
-    document.getElementById('upgrade-price').innerHTML = '<span class="upgrade-price-amount">$14.99</span><span class="upgrade-price-period">/month</span>';
+    document.getElementById('upgrade-price').innerHTML = '<span class="upgrade-price-amount">$9.99</span><span class="upgrade-price-period">/month</span>';
     document.getElementById('upgrade-save').style.display = 'none';
   } else {
-    document.getElementById('upgrade-price').innerHTML = '<span class="upgrade-price-amount">$100</span><span class="upgrade-price-period">/year</span>';
+    document.getElementById('upgrade-price').innerHTML = '<span class="upgrade-price-amount">$59.99</span><span class="upgrade-price-period">/year</span>';
     document.getElementById('upgrade-save').style.display = 'block';
   }
 }
@@ -9172,8 +9172,8 @@ function renderSubscriptionCard() {
     html += '<p style="font-size:12px;color:var(--cream-dim);line-height:1.6;margin-bottom:16px">You have full access to Healix AI and all premium features.</p>';
     html += '<button class="subscription-manage-btn" onclick="openBillingPortal()">Manage Subscription</button>';
   } else {
-    html += '<p style="font-size:12px;color:var(--cream-dim);line-height:1.6;margin-bottom:16px">Upgrade to Premium for unlimited AI health chat. $14.99/month or $100/year.</p>';
-    html += '<button class="subscription-upgrade-btn" onclick="showUpgradeModal()">Upgrade to Premium</button>';
+    html += '<p style="font-size:12px;color:var(--cream-dim);line-height:1.6;margin-bottom:16px">Upgrade to Healix Pro for unlimited AI health chat. $9.99/month or $59.99/year.</p>';
+    html += '<button class="subscription-upgrade-btn" onclick="showUpgradeModal()">Upgrade to Healix Pro</button>';
   }
 
   el.innerHTML = html;
