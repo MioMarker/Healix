@@ -73,3 +73,27 @@ test('profile gender and birth date are read, never defaulted', function () {
   assert.strictEqual(R.ageFromBirthDate('1986-11-11', new Date(2026, 10, 11)), 40);
   assert.strictEqual(R.ageFromBirthDate(null), null);
 });
+
+test('lab names: variants match, look-alikes do not', function () {
+  assert.strictEqual(R.labKeyFor('LDL Chol Calc (NIH)'), 'ldl');
+  assert.strictEqual(R.labKeyFor('Vitamin D, 25-Hydroxy'), 'vitaminD');
+  assert.strictEqual(R.labKeyFor('Testosterone, Total'), 'testosterone');
+  assert.strictEqual(R.labKeyFor('Free Testosterone'), null);
+  assert.strictEqual(R.labKeyFor('Cholesterol/HDL Ratio'), null);
+  assert.strictEqual(R.labKeyFor('HDL/LDL Ratio'), null);
+  assert.strictEqual(R.labKeyFor('Glucose, Urine'), null);
+  assert.strictEqual(R.labKeyFor('VLDL Cholesterol'), null);
+  assert.strictEqual(R.labKeyFor('Vitamin D, 1,25-Dihydroxy'), null);
+  assert.strictEqual(R.isLookalikeMarker('HbA1c (mmol/mol)'), false);
+});
+
+test('latest value per marker wins (rows come newest first)', function () {
+  var out = R.latestLabValues([
+    { biomarker_name: 'LDL Cholesterol', value: '117', unit: 'mg/dL' },
+    { biomarker_name: 'ldl', value: 130, unit: 'mg/dL' },
+    { biomarker_name: 'Cholesterol/HDL Ratio', value: 3.5, unit: null },
+    { biomarker_name: 'Ferritin', value: null, unit: 'ng/mL' }
+  ]);
+  assert.deepStrictEqual(out.values, { ldl: 117 });
+  assert.deepStrictEqual(out.units, { ldl: 'mg/dL' });
+});

@@ -681,7 +681,9 @@ function calcPhenoAge(bw, chronologicalAge) {
   return Math.round(phenoAge * 10) / 10;
 }
 
-function scoreBloodwork(bw, chronologicalAge) {
+// sex is used only by the fallback scoring, for HDL (low is below 40 for men,
+// below 50 for women; unknown sex uses 40). Matches the app's vitalityAge.ts.
+function scoreBloodwork(bw, chronologicalAge, sex) {
   if (!bw || Object.keys(bw).length === 0) return null;
   if (chronologicalAge != null) {
     var phenoAge = calcPhenoAge(bw, chronologicalAge);
@@ -714,9 +716,10 @@ function scoreBloodwork(bw, chronologicalAge) {
     else pts.push(10);
   }
   if (bw.hdl != null) {
+    var hdlLow = sex === 'female' ? 50 : 40;
     if (bw.hdl > 90) pts.push(78);
     else if (bw.hdl >= 60) pts.push(100);
-    else if (bw.hdl >= 40) pts.push(70);
+    else if (bw.hdl >= hdlLow) pts.push(70);
     else pts.push(30);
   }
   if (bw.crp != null) {
@@ -737,6 +740,12 @@ function scoreBloodwork(bw, chronologicalAge) {
   return Math.round(pts.reduce(function(a, b) { return a + b; }, 0) / pts.length);
 }
 
+/** Sex for lab ranges (null when the profile has none). Cached metrics may predate labPerson. */
+function labSexOf(metrics) {
+  if (metrics && metrics.labPerson) return metrics.labPerson.sex;
+  return getUserSex();
+}
+
 function calcVitalityAge(metrics) {
   var realAge = metrics.realAge || 35;
   var scores = [];
@@ -751,7 +760,7 @@ function calcVitalityAge(metrics) {
   //   Sleep:  EXCLUDED — lifestyle behavior that modulates other metrics
 
   // Blood work — 35%
-  var bwScore = scoreBloodwork(metrics.bloodwork, realAge);
+  var bwScore = scoreBloodwork(metrics.bloodwork, realAge, metrics.labPerson ? metrics.labPerson.sex : null);
   if (bwScore !== null) {
     scores.push({ name: 'bloodwork', label: 'Blood Work', score: bwScore, weight: 0.35 });
   }
@@ -1231,7 +1240,7 @@ var DRIVER_CHAT_PROMPTS = {
 function renderDriverCards(metrics, result) {
   // Weights match mobile app (vitalityAge.ts)
   var rawWeights = { bloodwork: 0.35, aerobic: 0.20, bp: 0.15, heart: 0.15, strength: 0.15 };
-  var bwPresent = scoreBloodwork(metrics.bloodwork, metrics.realAge) !== null;
+  var bwPresent = scoreBloodwork(metrics.bloodwork, metrics.realAge, labSexOf(metrics)) !== null;
   var hrPresent = metrics.hr !== null;
   var bpPresent = scoreBP(metrics.systolic, metrics.diastolic) !== null;
   var strPresent = metrics.strengthData !== null;
@@ -1367,7 +1376,7 @@ function renderDriverCards(metrics, result) {
   setDriver('aerobic',   aerVal, aerScore, '', aerPct);
 
   // Blood work — show connected state or ghost card
-  var bwScore = scoreBloodwork(metrics.bloodwork, metrics.realAge);
+  var bwScore = scoreBloodwork(metrics.bloodwork, metrics.realAge, labSexOf(metrics));
   if (bwScore !== null) {
     var bwPct = getPopulationPercentile('bloodwork', bwScore, pctProfile);
     setDriver('bloodwork', bwScore + '%', bwScore, '', bwPct);
@@ -1910,8 +1919,11 @@ async function loadDashboardData() {
   }
   console.log('[Healix] Dashboard loading — realAge:', realAge, 'profile:', window.userProfileData ? Object.keys(window.userProfileData) : 'null');
 
-  var sex = (window.userProfileData && window.userProfileData.sex) || 'male';
-  var metrics = { hr: null, hrv: null, vo2max: null, sex: sex, weightScore: null, weightVal: null, strengthData: null, bloodwork: null, sleep: null, sleepData: null, steps: null, nutritionScore: null, realAge: realAge, systolic: null, diastolic: null };
+  var profileGender = window.userProfileData && (window.userProfileData.gender || window.userProfileData.sex);
+  // VO2/strength norms still fall back to male when unknown; lab checks never guess.
+  var sex = HealixRanges.sexFromProfile(profileGender) || 'male';
+  var labPerson = { sex: HealixRanges.sexFromProfile(profileGender), age: HealixRanges.ageFromBirthDate(dobStr) };
+  var metrics = { labPerson: labPerson, labResults: null, hr: null, hrv: null, vo2max: null, sex: sex, weightScore: null, weightVal: null, strengthData: null, bloodwork: null, sleep: null, sleepData: null, steps: null, nutritionScore: null, realAge: realAge, systolic: null, diastolic: null };
   var timestamps = {};
 
   // 1. Health data (last 14 days for context)
@@ -2165,6 +2177,8 @@ async function loadDashboardData() {
       var unmapped = [];
       latestSamples.forEach(function(sample) {
         var key = BIOMARKER_MAP[sample.biomarker_name];
+        // "HDL/LDL Ratio", "Glucose, Urine" etc. contain a marker name but aren't that marker
+        if (!key && HealixRanges.isLookalikeMarker(sample.biomarker_name)) return;
         if (!key) {
           var lowerName = (sample.biomarker_name || '').toLowerCase().trim();
           var mapKeys = Object.keys(BIOMARKER_MAP);
@@ -2185,6 +2199,8 @@ async function loadDashboardData() {
       });
       if (unmapped.length > 0) console.log('[Healix] unmapped biomarkers:', unmapped.join(', '));
       metrics.bloodwork = Object.keys(bw).length > 0 ? bw : null;
+      // Values + units for the guideline checks (biomarker-ranges.js)
+      metrics.labResults = HealixRanges.latestLabValues(latestSamples);
       if (metrics.bloodwork) timestamps.bloodwork = bwData[0].test_date;
       // Store raw sample count so connectivity state can detect bloodwork even if mapping fails
       window._bloodworkRawCount = bwData.length;
@@ -4507,7 +4523,7 @@ var BIOMARKER_RANGES = {
   'Homocysteine':      { male: { low: 4, optLow: 5, optHigh: 15, high: 20 }, female: { low: 4, optLow: 5, optHigh: 8, high: 15 }, unit: 'umol/L', category: 'Metabolic' },
   // ── Lipid Panel ──
   'LDL Cholesterol':   { low: 0,  optLow: 0,   optHigh: 99,  high: 160, unit: 'mg/dL', category: 'Lipid Panel' },
-  'HDL Cholesterol':   { low: 40, optLow: 60,  optHigh: 90,  high: 100, unit: 'mg/dL', category: 'Lipid Panel' },
+  'HDL Cholesterol':   { male: { low: 40, optLow: 60, optHigh: 90, high: 100 }, female: { low: 50, optLow: 60, optHigh: 90, high: 100 }, unit: 'mg/dL', category: 'Lipid Panel' },
   'Triglycerides':     { low: 0,  optLow: 0,   optHigh: 149, high: 200, unit: 'mg/dL', category: 'Lipid Panel' },
   'Total Cholesterol': { low: 0,  optLow: 0,   optHigh: 199, high: 240, unit: 'mg/dL', category: 'Lipid Panel' },
   // ── Inflammation ──
@@ -4531,7 +4547,7 @@ var BIOMARKER_RANGES = {
   'Folate':            { low: 3, optLow: 10, optHigh: 20, high: 27, unit: 'ng/mL', category: 'Vitamins' },
   // ── Blood / Iron ──
   'Iron':              { male: { low: 40, optLow: 60, optHigh: 170, high: 200 }, female: { low: 40, optLow: 50, optHigh: 170, high: 200 }, unit: 'mcg/dL', category: 'Blood' },
-  'Ferritin':          { male: { low: 20, optLow: 30, optHigh: 300, high: 400 }, female: { low: 15, optLow: 50, optHigh: 150, high: 250 }, unit: 'ng/mL', category: 'Blood' },
+  'Ferritin':          { male: { low: 15, optLow: 30, optHigh: 300, high: 400 }, female: { low: 15, optLow: 50, optHigh: 150, high: 250 }, unit: 'ng/mL', category: 'Blood' },
   'TIBC':              { low: 250, optLow: 250, optHigh: 370, high: 450, unit: 'mcg/dL', category: 'Blood' },
   'Transferrin Saturation': { low: 15, optLow: 20, optHigh: 50, high: 60, unit: '%', category: 'Blood' },
   // ── CBC ──
@@ -4540,7 +4556,8 @@ var BIOMARKER_RANGES = {
   'RBC':               { male: { low: 3.8, optLow: 4.5, optHigh: 5.9, high: 6.2 }, female: { low: 3.5, optLow: 3.9, optHigh: 5.0, high: 5.5 }, unit: 'M/uL', category: 'CBC' },
   'Platelets':         { low: 140, optLow: 150, optHigh: 400, high: 450, unit: 'K/uL', category: 'CBC' },
   // ── Hormones ──
-  'Testosterone':      { male: { low: 250, optLow: 300, optHigh: 1000, high: 1200 }, female: { low: 10, optLow: 15, optHigh: 70, high: 100 }, unit: 'ng/dL', category: 'Hormones' },
+  // Guidelines give no comparable cut-off for women, so total testosterone isn't judged for women.
+  'Testosterone':      { male: { low: 300, optLow: 300, optHigh: 1000, high: 1200 }, female: null, unit: 'ng/dL', category: 'Hormones' },
   'Free Testosterone': { male: { low: 3, optLow: 5, optHigh: 21, high: 30 }, female: { low: 0.2, optLow: 0.5, optHigh: 3.5, high: 6.5 }, unit: 'pg/mL', category: 'Hormones' },
   'Estradiol':         { male: { low: 5, optLow: 10, optHigh: 40, high: 60 }, female: { low: 15, optLow: 20, optHigh: 350, high: 500 }, unit: 'pg/mL', category: 'Hormones' },
   'Progesterone':      { male: { low: 0, optLow: 0.1, optHigh: 0.5, high: 1.0 }, female: { low: 0, optLow: 0.1, optHigh: 25, high: 35 }, unit: 'ng/mL', category: 'Hormones' },
@@ -4630,12 +4647,24 @@ function getPopulationPercentile(driverKey, rawValue, profile) {
   return null;
 }
 
+/** 'male' | 'female' | null — read from the profile, never guessed. */
 function getUserSex() {
   var p = window.userProfileData;
-  return (p && (p.gender || p.sex)) || 'male';
+  return HealixRanges.sexFromProfile(p && (p.gender || p.sex));
 }
 
-function getRange(name, sex) {
+/** Age and sex for guideline lab ranges (either may be null). */
+function getLabPerson() {
+  var p = window.userProfileData;
+  return { sex: getUserSex(), age: HealixRanges.ageFromBirthDate(p && (p.birth_date || p.dob)) };
+}
+
+function sameUnit(a, b) {
+  var norm = function(u) { return String(u).toLowerCase().replace(/\s+/g, '').replace(/[\u03bc\u00b5]/g, 'u').replace('mcg', 'ug'); };
+  return norm(a) === norm(b);
+}
+
+function getRange(name, sex, unit) {
   var r = BIOMARKER_RANGES[name];
   if (!r) {
     // Case-insensitive exact match only — avoids false positives from substring matching
@@ -4645,9 +4674,12 @@ function getRange(name, sex) {
     }
   }
   if (!r) return null;
-  // Resolve sex-specific ranges
-  if (r.male && r.female) {
-    var resolved = (sex && sex.toLowerCase().indexOf('f') !== -1) ? r.female : r.male;
+  // A range in mg/dL says nothing about a result in mmol/L
+  if (unit && r.unit && !sameUnit(unit, r.unit)) return null;
+  // Resolve sex-specific ranges; unknown sex → no range (never guessed)
+  if (r.male || r.female) {
+    var resolved = sex === 'female' ? r.female : sex === 'male' ? r.male : null;
+    if (!resolved) return null;
     return { low: resolved.low, optLow: resolved.optLow, optHigh: resolved.optHigh, high: resolved.high, unit: r.unit, category: r.category };
   }
   return r;
@@ -4839,14 +4871,23 @@ function renderBloodworkDate(dateStr) {
 }
 
 function renderBiomarkerCard(sample, prevSample) {
-  var range = getRange(sample.biomarker_name, getUserSex());
+  var range = getRange(sample.biomarker_name, getUserSex(), sample.unit);
   var val = sample.value;
   var unit = sample.unit || (range ? range.unit : '');
   var refRange = sample.reference_range || '';
   var flag = sample.flag;
 
-  // Determine flag if not set but range is known
-  if (!flag && range && val !== null) {
+  // Published guideline band (same table as the app), e.g. "Prediabetes range"
+  var labKey = HealixRanges.labKeyFor(sample.biomarker_name);
+  var guideline = labKey && val !== null ? HealixRanges.classifyValue(labKey, val, sample.unit, getLabPerson()) : null;
+
+  // The lab's own flag wins; otherwise the guideline band; otherwise the table
+  // ...but only when the report printed no range of its own (the lab set its range for this person)
+  var labPrintedRange = !!refRange || sample.reference_range_min != null || sample.reference_range_max != null;
+  if (!flag && guideline && !labPrintedRange) {
+    var lvl = guideline.band.level;
+    flag = lvl === 'low' ? 'L' : (lvl === 'high' || lvl === 'very_high') ? 'H' : lvl === 'borderline' ? 'B' : null;
+  } else if (!flag && range && val !== null) {
     if (val < range.low) flag = 'L';
     else if (val > range.high) flag = 'H';
   }
@@ -4855,7 +4896,8 @@ function renderBiomarkerCard(sample, prevSample) {
   if (flag === 'H') flagHtml = '<span class="bw-card-flag bw-flag-h">High</span>';
   else if (flag === 'L') flagHtml = '<span class="bw-card-flag bw-flag-l">Low</span>';
   else if (flag === 'A') flagHtml = '<span class="bw-card-flag bw-flag-a">Abnormal</span>';
-  else if (val !== null && range) flagHtml = '<span class="bw-card-flag bw-flag-normal">Normal</span>';
+  else if (flag === 'B') flagHtml = '<span class="bw-card-flag bw-flag-a">Borderline</span>';
+  else if (val !== null && (range || guideline)) flagHtml = '<span class="bw-card-flag bw-flag-normal">Normal</span>';
 
   // Range visualization
   var rangeHtml = '';
@@ -4897,8 +4939,10 @@ function renderBiomarkerCard(sample, prevSample) {
 
   // Contextual chat link for flagged or out-of-range biomarkers
   var chatHtml = '';
-  if (flag === 'H' || flag === 'L' || flag === 'A') {
-    var chatQ = flag === 'H'
+  if (flag === 'H' || flag === 'L' || flag === 'A' || flag === 'B') {
+    var chatQ = flag === 'B'
+      ? 'My ' + sample.biomarker_name + ' is ' + displayVal + ' ' + unit + ', which is in the "' + guideline.band.label.toLowerCase() + '" range. What does this mean and what can I do?'
+      : flag === 'H'
       ? 'My ' + sample.biomarker_name + ' is high at ' + displayVal + ' ' + unit + '. What does this mean and how can I improve it?'
       : flag === 'L'
       ? 'My ' + sample.biomarker_name + ' is low at ' + displayVal + ' ' + unit + '. What does this mean and how can I improve it?'
@@ -4914,6 +4958,7 @@ function renderBiomarkerCard(sample, prevSample) {
     + flagHtml
     + '</div>'
     + rangeHtml
+    + (guideline ? '<div class="bw-card-ref">Guideline: ' + escapeHtml(guideline.band.label) + ' (' + escapeHtml(guideline.range.citation) + ')</div>' : '')
     + (refRange ? '<div class="bw-card-ref">Ref: ' + escapeHtml(refRange) + '</div>' : '')
     + deltaHtml
     + chatHtml
@@ -12593,7 +12638,7 @@ function computeDriverExplainer(key, ctx) {
   if (key === 'bloodwork') {
     if (!m.bloodwork) return null;
     var count = Object.keys(m.bloodwork).length;
-    var bwScore = typeof scoreBloodwork === 'function' ? scoreBloodwork(m.bloodwork) : null;
+    var bwScore = typeof scoreBloodwork === 'function' ? scoreBloodwork(m.bloodwork, m.realAge, labSexOf(m)) : null;
     var zone = bwScore !== null ? (bwScore >= 70 ? 'good' : bwScore >= 40 ? 'fair' : 'needs attention') : 'scored';
     var text = count + ' biomarkers tracked — overall ' + zone + '.';
     if (goal.indexOf('strength') !== -1) text += ' Key markers like testosterone, iron, and vitamin D directly affect strength and recovery.';

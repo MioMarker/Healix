@@ -170,6 +170,73 @@
     return null;
   }
 
+  // Lab lines whose names contain a base marker but measure something else
+  // ("Cholesterol/HDL Ratio", "Free Testosterone", "Glucose, Urine").
+  // Same patterns as the app's isLookalikeMarker in biomarkerCatalog.ts.
+  var LOOKALIKE_PATTERNS = [
+    /\bratios?\b/,
+    /\/(?!\s*(am|pm)\b)/,
+    /urine|urinary|microalbumin/,
+    /estimated average|\beag\b/,
+    /particle|\bldl-p\b/,
+    /non-?\s?hdl|vldl/,
+    /\bfree\b|bioavailable|binding|saturation/,
+    /clearance/,
+    /tolerance|\b\d+\s?-?h(ou)?r\b|postprandial/,
+    /1,\s?25/
+  ];
+
+  /** True for ratios, urine tests, estimated values, free/bound fractions and similar. */
+  function isLookalikeMarker(name) {
+    var lower = String(name || '').toLowerCase().replace(/\([^)]*\)/g, '');
+    return LOOKALIKE_PATTERNS.some(function (p) { return p.test(lower); });
+  }
+
+  // Printed names for the markers above (matched case-insensitively, after the look-alike guard).
+  var NAME_KEYS = {
+    'glucose': 'glucose', 'fasting glucose': 'glucose', 'glucose, fasting': 'glucose', 'glucose, serum': 'glucose',
+    'glucose,serum': 'glucose', 'blood glucose': 'glucose', 'glucose fasting': 'glucose', 'glucose (fasting)': 'glucose',
+    'hemoglobin a1c': 'hba1c', 'hba1c': 'hba1c', 'a1c': 'hba1c', 'hgba1c': 'hba1c', 'hgb a1c': 'hba1c',
+    'glycated hemoglobin': 'hba1c', 'hemoglobin a1c (hba1c)': 'hba1c',
+    'ldl': 'ldl', 'ldl cholesterol': 'ldl', 'ldl-c': 'ldl', 'ldl chol calc (nih)': 'ldl', 'ldl chol calc': 'ldl',
+    'ldl cholesterol calc': 'ldl', 'ldl-cholesterol': 'ldl', 'ldl chol': 'ldl', 'low density lipoprotein': 'ldl',
+    'hdl': 'hdl', 'hdl cholesterol': 'hdl', 'hdl-c': 'hdl', 'hdl-cholesterol': 'hdl', 'hdl chol': 'hdl',
+    'high density lipoprotein': 'hdl',
+    'triglycerides': 'triglycerides', 'triglyceride': 'triglycerides', 'tg': 'triglycerides', 'trigs': 'triglycerides',
+    'vitamin d': 'vitaminD', 'vitamin d, 25-hydroxy': 'vitaminD', 'vitamin d 25-hydroxy': 'vitaminD',
+    '25-hydroxy vitamin d': 'vitaminD', '25-hydroxyvitamin d': 'vitaminD', 'vitamin d, 25-oh': 'vitaminD',
+    'vitamin d 25-oh': 'vitaminD', '25-oh vitamin d': 'vitaminD', 'vitamin d3': 'vitaminD', 'vitamin d total': 'vitaminD',
+    'crp': 'crp', 'hs-crp': 'crp', 'hscrp': 'crp', 'c-reactive protein': 'crp', 'c reactive protein': 'crp',
+    'c-reactive protein, cardiac': 'crp', 'high sensitivity crp': 'crp',
+    'testosterone': 'testosterone', 'testosterone, total': 'testosterone', 'total testosterone': 'testosterone',
+    'testosterone, serum': 'testosterone', 'testosterone total': 'testosterone',
+    'ferritin': 'ferritin', 'ferritin, serum': 'ferritin', 'serum ferritin': 'ferritin'
+  };
+
+  /** The marker key for a printed lab name, or null (look-alikes and unknown names). */
+  function labKeyFor(name) {
+    if (!name || isLookalikeMarker(name)) return null;
+    var lower = String(name).trim().toLowerCase();
+    if (NAME_KEYS[lower]) return NAME_KEYS[lower];
+    // "LDL Cholesterol (Calc)" → strip bracketed notes and try again
+    var stripped = lower.replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+    return NAME_KEYS[stripped] || null;
+  }
+
+  /** Newest numeric value and unit per marker from blood_work_samples rows (sorted newest first). */
+  function latestLabValues(samples) {
+    var values = {};
+    var units = {};
+    (samples || []).forEach(function (s) {
+      var key = labKeyFor(s.biomarker_name);
+      var v = s.value == null ? NaN : parseFloat(s.value);
+      if (!key || !isFinite(v) || key in values) return;
+      values[key] = v;
+      units[key] = s.unit || null;
+    });
+    return { values: values, units: units };
+  }
+
   var SEE = 'Please book a visit with your doctor to confirm this result.';
 
   /** What to do, by marker and band. Hedged, practical, never causal. Null when normal. */
@@ -247,7 +314,10 @@
     unitMatches: unitMatches,
     classifyValue: classifyValue,
     adviceFor: adviceFor,
-    checkLabResults: checkLabResults
+    checkLabResults: checkLabResults,
+    isLookalikeMarker: isLookalikeMarker,
+    labKeyFor: labKeyFor,
+    latestLabValues: latestLabValues
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
