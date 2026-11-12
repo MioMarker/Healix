@@ -47,14 +47,7 @@
     deadlift_1rm: { beginner: 1.0, novice: 1.25, intermediate: 1.75, advanced: 2.5 }
   };
 
-  var OPTIMAL_RANGES = {
-    glucose: { min: 70, max: 100, unit: 'mg/dL', label: 'Fasting Glucose' },
-    hba1c: { min: 4.0, max: 5.6, unit: '%', label: 'HbA1c' },
-    ldl: { min: 0, max: 100, unit: 'mg/dL', label: 'LDL Cholesterol' },
-    hdl: { min: 40, max: Infinity, unit: 'mg/dL', label: 'HDL Cholesterol' },
-    triglycerides: { min: 0, max: 150, unit: 'mg/dL', label: 'Triglycerides' },
-    crp: { min: 0, max: 1, unit: 'mg/L', label: 'CRP' }
-  };
+  // Lab cut-offs live in biomarker-ranges.js (window.HealixRanges).
 
   var RDA_TARGETS = {
     Iron: 18,
@@ -350,6 +343,13 @@
         sleepData: sleepData,
         weightScore: weightScore,
         bloodwork: bloodwork,
+        // Guideline lab checks (biomarker-ranges.js): values + units, and the
+        // person's age and sex, either of which may be null (never guessed).
+        labResults: metrics.labResults || null,
+        labPerson: metrics.labPerson || {
+          sex: window.HealixRanges ? window.HealixRanges.sexFromProfile(userProfile.gender) : null,
+          age: window.HealixRanges ? window.HealixRanges.ageFromBirthDate(userProfile.birth_date) : null
+        },
         strengthData: strengthData,
         vo2max: metrics.vo2max || null,
         realAge: realAge
@@ -1825,41 +1825,33 @@
   // Rules: Bloodwork
   // =========================================================================
 
+  // One card for every lab result outside its published guideline range
+  // (same cut-offs and advice as the app's generate-health-findings).
   var bloodworkFlagged = {
     id: 'bloodwork_flagged',
     domain: 'bloodwork',
     severity: 'attention',
     detect: function (ctx) {
-      var bloodwork = ctx.metrics.bloodwork;
-      if (!bloodwork) return null;
-      var flagged = [];
-      var keys = Object.keys(OPTIMAL_RANGES);
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        var range = OPTIMAL_RANGES[key];
-        var value = bloodwork[key];
-        if (value == null) continue;
-        var belowMin = range.min > 0 && value < range.min;
-        var aboveMax = range.max !== Infinity && value > range.max;
-        if (belowMin) {
-          flagged.push({ key: key, value: value, label: range.label, unit: range.unit, direction: 'low' });
-        } else if (aboveMax) {
-          flagged.push({ key: key, value: value, label: range.label, unit: range.unit, direction: 'high' });
-        }
-      }
+      var labs = ctx.metrics.labResults;
+      if (!labs || !window.HealixRanges) return null;
+      var flagged = window.HealixRanges.checkLabResults(labs.values, labs.units, ctx.metrics.labPerson);
       if (flagged.length === 0) return null;
       return { flagged: flagged };
     },
     template: function (data) {
+      var top = data.flagged[0];
       var details = data.flagged.map(function (f) {
-        return f.label + ': ' + f.value + ' ' + f.unit + ' (' + f.direction + ')';
+        return f.label + ' ' + f.value + ' ' + f.unit + ': ' + f.bandLabel.toLowerCase();
       }).join('; ');
-      var plural = data.flagged.length > 1 ? 'markers are' : 'marker is';
+      var sources = data.flagged.map(function (f) { return f.citation; })
+        .filter(function (c, i, all) { return all.indexOf(c) === i; }).join(', ');
+      var single = data.flagged.length === 1;
       return {
-        headline: 'Bloodwork ' + plural + ' outside optimal range',
-        body: 'The following ' + plural + ' outside the optimal range: ' + details + '. Optimal ranges shown are based on AHA cholesterol guidelines and ADA glucose standards. Discuss these results with your healthcare provider.',
-        action: 'Discuss these results with your healthcare provider.',
-        _severity: data.flagged.length >= 3 ? 'alert' : 'attention'
+        headline: single ? top.label + ': ' + top.bandLabel : data.flagged.length + ' lab results outside the healthy range',
+        body: (single ? 'Your ' : 'Your latest results: ') + details + ' (published guidelines: ' + sources + '). ' +
+          (single ? '' : 'Start with ' + top.label + '. ') + top.action,
+        action: single ? 'What does my ' + top.label + ' result mean?' : 'Which of my lab results should I focus on?',
+        _severity: data.flagged.some(function (f) { return f.severity === 'alert'; }) ? 'alert' : 'attention'
       };
     }
   };
@@ -2433,13 +2425,17 @@
       if (ctx.metrics.vo2max == null || !ctx.metrics.bloodwork) return null;
       var hdl = ctx.metrics.bloodwork.hdl;
       if (!hdl) return null;
-      return { vo2: Math.round(ctx.metrics.vo2max * 10) / 10, hdl: hdl, lowHdl: hdl < 40 };
+      var person = ctx.metrics.labPerson || {};
+      var lowCut = person.sex === 'female' ? 50 : person.sex === 'male' ? 40 : null;
+      // Without a sex on the profile we can't say HDL is low (40 for men, 50 for women)
+      if (lowCut === null) return null;
+      return { vo2: Math.round(ctx.metrics.vo2max * 10) / 10, hdl: hdl, lowHdl: hdl < lowCut, lowCut: lowCut, sex: person.sex };
     },
     template: function (data) {
       if (data.lowHdl) {
         return {
           headline: 'Low HDL \u2014 aerobic fitness can help',
-          body: 'Your HDL is ' + data.hdl + ' mg/dL (below the 40 mg/dL AHA threshold) with a VO2 max of ' + data.vo2 + '. Research links higher aerobic fitness to higher HDL levels.',
+          body: 'Your HDL is ' + data.hdl + ' mg/dL (below the ' + data.lowCut + ' mg/dL AHA threshold for ' + (data.sex === 'female' ? 'women' : 'men') + ') with a VO2 max of ' + data.vo2 + '. Research links higher aerobic fitness to higher HDL levels.',
           action: 'How can I raise my HDL cholesterol?',
           _severity: 'attention'
         };
@@ -3224,7 +3220,9 @@
       var hr = ctx.metrics.hr;
       var concerns = [];
       if (bw.ldl && bw.ldl > 100) concerns.push('LDL ' + bw.ldl + ' mg/dL');
-      if (bw.hdl && bw.hdl < 45) concerns.push('HDL ' + bw.hdl + ' mg/dL');
+      var hdlSex = ctx.metrics.labPerson ? ctx.metrics.labPerson.sex : null;
+      var hdlCut = hdlSex === 'female' ? 50 : hdlSex === 'male' ? 40 : null;
+      if (bw.hdl && hdlCut !== null && bw.hdl < hdlCut) concerns.push('HDL ' + bw.hdl + ' mg/dL');
       if (bw.triglycerides && bw.triglycerides > 150) concerns.push('triglycerides ' + bw.triglycerides + ' mg/dL');
       if (bw.crp && bw.crp > 1) concerns.push('CRP ' + bw.crp + ' mg/L');
       if (hr != null && hr > 75) concerns.push('resting HR ' + hr + ' bpm');
