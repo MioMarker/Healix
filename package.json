@@ -5,7 +5,8 @@
   "description": "Static HTML/JS for usehealix.com.",
   "scripts": {
     "test": "playwright test",
-    "test:install": "playwright install chromium"
+    "test:install": "playwright install chromium",
+    "test:unit": "node --test tests/unit/*.test.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0"
